@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#24120B">
+<title>Cook Africa — Maquis à la braise</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;900&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cacao: #24120B;
+    --cacao-2: #34190F;
+    --terre: #4A2416;
+    --braise: #F0641E;
+    --or: #F1C50E;
+    --rouge: #B30807;
+    --creme: #FFF1D0;
+    --sable: #D9BFA0;
+    --titre: "Big Shoulders Display", Impact, sans-serif;
+    --texte: "Work Sans", system-ui, sans-serif;
+    --barre: 68px;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html { scroll-behavior: smooth; }
+  body { font-family: var(--texte); background: var(--cacao); color: var(--creme); font-size: 16px; line-height: 1.55; padding-bottom: calc(var(--barre) + env(safe-area-inset-bottom)); -webkit-tap-highlight-color: transparent; }
+  a { color: inherit; }
+  button { font: inherit; color: inherit; }
+  :focus-visible { outline: 3px solid var(--or); outline-offset: 3px; border-radius: 6px; }
+  .wrap { padding: 0 16px; max-width: 1200px; margin: 0 auto; }
+
+  header { position: relative; z-index: 2; }
+  header .wrap { display: flex; justify-content: space-between; align-items: center; gap: 16px; height: 64px; }
+  header img { display: block; height: 38px; width: auto; border-radius: 9px; }
+  header nav { display: none; }
+  .btn { display: inline-block; text-decoration: none; font-weight: 600; padding: 12px 22px; border-radius: 12px; background: var(--braise); color: var(--cacao); }
+  .btn:hover { background: var(--or); }
+
+  /* Hero : les braises derrière, le composeur devant */
+  .compose { position: relative; padding: 8px 0 48px; overflow: hidden; margin-top: -64px; padding-top: 72px; }
+  .compose::before { content: ""; position: absolute; inset: 0; background: radial-gradient(90% 45% at 50% 100%, rgba(240,100,30,.32), transparent 70%); pointer-events: none; }
+  #braises { position: absolute; inset: 0; width: 100%; height: 100%; display: block; pointer-events: none; }
+  .compose .wrap { position: relative; }
+  h1 { font: 900 clamp(50px, 15vw, 120px)/.88 var(--titre); text-transform: uppercase; }
+  h1 span { display: block; color: var(--or); }
+  .aide { margin: 14px 0 6px; font-size: 17px; color: var(--sable); max-width: 32em; }
+  #awale { --ck-titre: var(--titre); --ck-or: var(--or); --ck-sable: var(--sable); --ck-carte: rgba(52,25,15,.9); --ck-bord: var(--terre); scroll-margin-top: 10px; }
+
+  .infos { padding-top: 8px; }
+  .infos { color: var(--cacao); padding-bottom: 40px; }
+  .infos .boite { display: grid; gap: 24px; background: var(--cacao-2); border: 1px solid var(--terre); color: var(--creme); border-radius: 24px; padding: 26px; }
+  .infos h2 { font: 900 40px/.95 var(--titre); text-transform: uppercase; color: var(--or); }
+  .infos h3 { font-weight: 600; color: var(--braise); margin-bottom: 6px; font-size: 16px; }
+  .infos .tel { font: 900 32px var(--titre); text-decoration: none; }
+  .infos dl { display: grid; grid-template-columns: auto auto; justify-content: start; gap: 4px 18px; }
+  footer { color: var(--sable); padding: 0 0 24px; font-size: 13px; }
+
+  .barre { position: fixed; z-index: 20; left: 0; right: 0; bottom: 0; height: calc(var(--barre) + env(safe-area-inset-bottom)); padding: 8px 12px calc(8px + env(safe-area-inset-bottom)); display: grid; grid-template-columns: 1fr 1.3fr 1fr; gap: 8px; background: rgba(36,18,11,.95); backdrop-filter: blur(10px); border-top: 1px solid var(--terre); }
+  .barre a { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; border-radius: 14px; text-decoration: none; font-size: 13px; font-weight: 500; color: var(--sable); }
+  .barre a.principal { background: var(--braise); color: var(--cacao); font-weight: 600; flex-direction: row; gap: 8px; font-size: 15px; }
+  .barre svg { width: 20px; height: 20px; }
+
+  @media (min-width: 720px) {
+    .wrap { padding: 0 32px; }
+    .infos .boite { grid-template-columns: 1.2fr 1fr 1fr; padding: 40px; }
+  }
+  @media (min-width: 1024px) {
+    body { padding-bottom: 0; font-size: 17px; }
+    .barre { display: none; }
+    header .wrap { height: 80px; }
+    header img { height: 50px; }
+    header nav { display: flex; gap: 24px; align-items: center; }
+    header nav a.lien { text-decoration: none; color: var(--sable); }
+    header nav a.lien:hover { color: var(--creme); }
+    .compose { margin-top: -80px; padding: 96px 0 64px; }
+    h1 { font-size: clamp(64px, 6.2vw, 92px); }
+    h1 span { display: inline; }
+  }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <a href="#"><img src="assets/logo.jpg" alt="Cook Africa, l'univers des mets africains"></a>
+    <nav aria-label="Navigation principale">
+      <a class="lien" href="#awale">La carte</a>
+      <a class="lien" href="#infos">Horaires</a>
+      <a class="btn" href="tel:+2250151459134">Appeler</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="compose" id="compose">
+    <canvas id="braises" aria-hidden="true"></canvas>
+    <div class="wrap">
+      <h1>On mange quoi <span>aujourd'hui&nbsp;?</span></h1>
+      <p class="aide">Chaque trou de l'awalé est une rubrique, chaque graine un plat. Touchez un trou pour semer ses graines : les plats poussent en dessous.</p>
+      <div id="awale"></div>
+    </div>
+  </section>
+
+  <section class="infos" id="infos">
+    <div class="wrap">
+      <div class="boite">
+        <h2>Le feu est allumé dès midi.</h2>
+        <div>
+          <h3>Horaires</h3>
+          <dl id="horaires"></dl>
+          <h3 style="margin-top:16px">Adresse</h3>
+          <p id="adresse"></p>
+        </div>
+        <div>
+          <h3>Réserver ou commander</h3>
+          <a class="tel" href="tel:+2250151459134">01 51 45 91 34</a>
+          <p><a href="mailto:cook@cookafricavip.com">cook@cookafricavip.com</a></p>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+<footer><div class="wrap">Cook Africa, l'univers des mets africains. Abidjan.</div></footer>
+
+<nav class="barre" aria-label="Actions rapides">
+  <a href="#awale"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>La carte</a>
+  <a class="principal" href="tel:+2250151459134"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h4l2 5-2.5 1.5a11 11 0 0 0 6 6L16 13l5 2v4a2 2 0 0 1-2 2A17 17 0 0 1 3 5a2 2 0 0 1 2-2"/></svg>Appeler</a>
+  <a id="itineraire" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s7-6.2 7-12a7 7 0 0 0-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>Y aller</a>
+</nav>
+
+<script src="assets/menu.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="assets/composants/awale.js"></script>
+<script>
+  const D = window.COOKAFRICA;
+  const REDUIT = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // ——— Braises (Three.js) : des étincelles qui montent ; passer le doigt attise le feu ———
+  (function braises() {
+    const canvas = document.getElementById("braises"), zone = document.getElementById("compose");
+    if (REDUIT || !window.THREE) return;
+    let renderer;
+    try { renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: false }); } catch { return; }
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    const sc = new THREE.Scene(), cam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 10);
+    const N = innerWidth < 720 ? 260 : 520;
+    const p = new Float32Array(N * 3), v = new Float32Array(N * 3), vie = new Float32Array(N), taille = new Float32Array(N), teinte = new Float32Array(N);
+    let L = 1, Hh = 1; // demi-largeur / demi-hauteur du monde
+    function naitre(i, partout) {
+      p[i * 3] = (Math.random() * 2 - 1) * L * .9;
+      p[i * 3 + 1] = partout ? (Math.random() * 2 - 1) * Hh : -Hh - Math.random() * .2;
+      v[i * 3] = (Math.random() - .5) * .002; v[i * 3 + 1] = .002 + Math.random() * .006;
+      vie[i] = .6 + Math.random() * .4; taille[i] = 4 + Math.random() * 9; teinte[i] = Math.random();
+    }
+    for (let i = 0; i < N; i++) naitre(i, true);
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute("position", new THREE.BufferAttribute(p, 3));
+    geo.setAttribute("vie", new THREE.BufferAttribute(vie, 1));
+    geo.setAttribute("taille", new THREE.BufferAttribute(taille, 1));
+    geo.setAttribute("teinte", new THREE.BufferAttribute(teinte, 1));
+    const mat = new THREE.ShaderMaterial({
+      transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+      uniforms: { dpr: { value: renderer.getPixelRatio() }, t: { value: 0 } },
+      vertexShader: `
+        attribute float vie; attribute float taille; attribute float teinte;
+        uniform float dpr; uniform float t; varying float vV; varying float vT;
+        void main() {
+          vV = vie; vT = teinte;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+          gl_PointSize = taille * dpr * (0.6 + 0.4 * sin(t * 9.0 + teinte * 40.0)) * (0.4 + vie);
+        }`,
+      fragmentShader: `
+        varying float vV; varying float vT;
+        void main() {
+          float d = length(gl_PointCoord - 0.5);
+          float a = smoothstep(0.5, 0.0, d);
+          vec3 braise = mix(vec3(0.94, 0.30, 0.06), vec3(1.0, 0.78, 0.1), vT);
+          gl_FragColor = vec4(braise * (0.6 + a), a * a * vV);
+        }`
+    });
+    sc.add(new THREE.Points(geo, mat));
+
+    const souffle = { x: 0, y: 0, f: 0 };
+    zone.addEventListener("pointermove", e => {
+      const r = zone.getBoundingClientRect();
+      souffle.x = ((e.clientX - r.left) / r.width * 2 - 1) * L; souffle.y = (1 - (e.clientY - r.top) / r.height * 2) * Hh;
+      souffle.f = Math.min(souffle.f + .2, 1);
+    }, { passive: true });
+
+    function dimension() {
+      const w = zone.clientWidth, h = zone.clientHeight;
+      renderer.setSize(w, h, false);
+      L = w / h; Hh = 1;
+      cam.left = -L; cam.right = L; cam.top = 1; cam.bottom = -1; cam.updateProjectionMatrix();
+    }
+    new ResizeObserver(dimension).observe(zone); dimension();
+
+    let actif = true, enCours = false, avant = performance.now();
+    const lancer = () => { if (!enCours) { enCours = true; requestAnimationFrame(boucle); } };
+    new IntersectionObserver(([e]) => { actif = e.isIntersecting; if (actif) lancer(); }).observe(zone);
+    function boucle(now) {
+      enCours = false;
+      const dt = Math.min((now - avant) / 16.7, 3); avant = now;
+      souffle.f *= .96;
+      for (let i = 0; i < N; i++) {
+        const k = i * 3, dx = p[k] - souffle.x, dy = p[k + 1] - souffle.y, d2 = dx * dx + dy * dy;
+        if (souffle.f > .01 && d2 < .12) { v[k] += dx * .004 * souffle.f; v[k + 1] += .003 * souffle.f; vie[i] = Math.min(vie[i] + .02, 1); }
+        v[k] += Math.sin(now * .001 + i) * .00005;
+        v[k] *= .985; v[k + 1] = Math.min(v[k + 1] * .995 + .00003, .02);
+        p[k] += v[k] * dt; p[k + 1] += v[k + 1] * dt;
+        vie[i] -= .0025 * dt;
+        if (vie[i] <= 0 || p[k + 1] > Hh + .1) naitre(i, false);
+      }
+      geo.attributes.position.needsUpdate = geo.attributes.vie.needsUpdate = true;
+      mat.uniforms.t.value = now / 1000;
+      renderer.render(sc, cam);
+      if (actif) lancer();
+    }
+    lancer();
+  })();
+
+  // ——— La carte à l'awalé ———
+  CookAwale.monter(document.getElementById("awale"), { plats: D.plats, categories: D.categories });
+
+  document.getElementById("horaires").innerHTML = D.infos.horaires.map(x => `<dt>${x.jours}</dt><dd><strong>${x.heures}</strong></dd>`).join("");
+  document.getElementById("adresse").textContent = D.infos.adresse;
+  document.getElementById("itineraire").href = D.infos.itineraire;
+</script>
+</body>
+</html>

@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#24120B">
+<title>Cook Africa — La carte à l'awalé</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;900&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cacao: #24120B; --cacao-2: #34190F; --terre: #4A2416; --braise: #F0641E; --or: #F1C50E; --rouge: #B30807; --creme: #FFF1D0; --sable: #D9BFA0;
+    --titre: "Big Shoulders Display", Impact, sans-serif;
+    --texte: "Work Sans", system-ui, sans-serif;
+    --barre: 68px;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html { scroll-behavior: smooth; }
+  body { font-family: var(--texte); background: var(--cacao); color: var(--creme); font-size: 16px; line-height: 1.55; padding-bottom: calc(var(--barre) + env(safe-area-inset-bottom)); -webkit-tap-highlight-color: transparent; }
+  a { color: inherit; }
+  button { font: inherit; color: inherit; }
+  :focus-visible { outline: 3px solid var(--or); outline-offset: 3px; border-radius: 6px; }
+  .wrap { padding: 0 16px; max-width: 1240px; margin: 0 auto; }
+
+  header .wrap { display: flex; justify-content: space-between; align-items: center; height: 62px; }
+  header img { height: 36px; border-radius: 9px; display: block; }
+  header nav { display: none; }
+  .btn { display: inline-block; text-decoration: none; font-weight: 600; padding: 12px 22px; border-radius: 12px; background: var(--braise); color: var(--cacao); }
+
+  h1 { font: 900 clamp(42px, 12vw, 88px)/.9 var(--titre); text-transform: uppercase; }
+  h1 span { color: var(--or); display: block; }
+  .aide { margin-top: 10px; color: var(--sable); max-width: 32em; }
+
+  /* Le plateau */
+  .plateau { position: relative; height: min(118vw, 64dvh); min-height: 420px; margin: 8px -16px 0; touch-action: pan-y; }
+  .plateau canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .trous { position: absolute; inset: 0; pointer-events: none; }
+  .trou { position: absolute; left: 0; top: 0; pointer-events: auto; display: grid; justify-items: end; gap: 0; padding: 6px 10px; border: 0; border-radius: 12px; background: rgba(36,18,11,.7); color: var(--creme); cursor: pointer; text-align: right; backdrop-filter: blur(4px); will-change: transform; transition: background .2s, color .2s; }
+  .trou b { font: 700 19px/1 var(--titre); text-transform: uppercase; letter-spacing: .01em; }
+  .trou small { font-size: 12px; color: var(--sable); }
+  .trou[aria-pressed="true"] { background: var(--or); color: var(--cacao); }
+  .trou[aria-pressed="true"] small { color: var(--terre); }
+  .sans3d .trous { position: static; display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; padding: 0 16px; }
+  .sans3d .trou { position: static; justify-items: start; text-align: left; transform: none !important; }
+  .sans3d.plateau { height: auto; min-height: 0; }
+
+  /* Les plats semés */
+  .recolte { padding: 20px 0 40px; scroll-margin-top: 10px; }
+  .recolte h2 { font: 700 30px/1.05 var(--titre); text-transform: uppercase; color: var(--or); }
+  .recolte .vide { color: var(--sable); margin-top: 8px; }
+  .graines { list-style: none; padding: 0; margin-top: 12px; display: grid; gap: 10px; }
+  .graines li { display: grid; grid-template-columns: auto 1fr auto; gap: 2px 12px; align-items: start; padding: 14px; border-radius: 16px; background: var(--cacao-2); border: 1px solid var(--terre); animation: pousse .45s cubic-bezier(.2,.9,.25,1.3) backwards; }
+  @keyframes pousse { from { opacity: 0; transform: translateY(-14px) scale(.96); } }
+  .graines .grain { width: 14px; height: 11px; margin-top: 6px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #B8B5A2, #6E6C5C); }
+  .graines .grain.or { background: radial-gradient(circle at 35% 35%, #FFE27A, #C99A06); }
+  .graines strong { font-weight: 600; font-size: 17px; }
+  .graines p { grid-column: 2 / -1; color: var(--sable); font-size: 15px; }
+  .graines .prix { color: var(--or); font-weight: 600; white-space: nowrap; }
+
+  .infos { padding: 16px 0 48px; }
+  .infos .boite { display: grid; gap: 22px; background: var(--creme); color: var(--cacao); border-radius: 24px; padding: 26px; }
+  .infos h2 { font: 900 38px/.95 var(--titre); text-transform: uppercase; color: var(--rouge); }
+  .infos h3 { font-weight: 600; font-size: 16px; color: var(--rouge); margin-bottom: 6px; }
+  .infos dl { display: grid; grid-template-columns: auto auto; justify-content: start; gap: 4px 18px; }
+  .infos .tel { font: 900 30px var(--titre); text-decoration: none; }
+  .source { font-size: 12px; color: #8f7660; padding-bottom: 20px; }
+
+  .barre { position: fixed; z-index: 20; left: 0; right: 0; bottom: 0; height: calc(var(--barre) + env(safe-area-inset-bottom)); padding: 8px 12px calc(8px + env(safe-area-inset-bottom)); display: grid; grid-template-columns: 1fr 1.3fr 1fr; gap: 8px; background: rgba(36,18,11,.95); backdrop-filter: blur(10px); border-top: 1px solid var(--terre); }
+  .barre a { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; border-radius: 14px; text-decoration: none; font-size: 13px; font-weight: 500; color: var(--sable); }
+  .barre a.principal { background: var(--braise); color: var(--cacao); font-weight: 600; flex-direction: row; gap: 8px; font-size: 15px; }
+  .barre svg { width: 20px; height: 20px; }
+
+  @media (min-width: 720px) {
+    .wrap { padding: 0 32px; }
+    .plateau { margin: 8px -32px 0; }
+    .graines { grid-template-columns: 1fr 1fr; }
+    .infos .boite { grid-template-columns: 1.2fr 1fr 1fr; padding: 40px; }
+  }
+  @media (min-width: 1024px) {
+    body { padding-bottom: 0; font-size: 17px; }
+    .barre { display: none; }
+    header .wrap { height: 80px; }
+    header img { height: 50px; }
+    header nav { display: flex; gap: 24px; align-items: center; }
+    header nav a.lien { text-decoration: none; color: var(--sable); }
+    .jeu { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 32px; align-items: start; }
+    .plateau { height: min(60vh, 560px); margin: 0; }
+    .trou { justify-items: center; text-align: center; }
+    .recolte { padding-top: 60px; max-height: calc(100vh - 40px); overflow: auto; position: sticky; top: 20px; }
+    .graines { grid-template-columns: 1fr; }
+  }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .graines li { animation: none; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <a href="#"><img src="assets/logo.jpg" alt="Cook Africa, l'univers des mets africains"></a>
+    <nav aria-label="Navigation principale">
+      <a class="lien" href="#infos">Horaires et adresse</a>
+      <a class="btn" href="tel:+2250151459134">Appeler</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="wrap">
+    <h1>Semez,<span>on vous sert.</span></h1>
+    <p class="aide">Chaque trou de l'awalé est une rubrique, chaque graine un plat. Touchez un trou pour semer ses graines.</p>
+    <div class="jeu">
+      <div class="plateau" id="plateau">
+        <div class="trous" id="trous" role="group" aria-label="Rubriques de la carte"></div>
+      </div>
+      <div class="recolte" id="recolte" aria-live="polite">
+        <h2 id="titre-recolte">Votre récolte</h2>
+        <p class="vide" id="vide">Rien de semé pour l'instant. Choisissez un trou.</p>
+        <ul class="graines" id="graines"></ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap infos" id="infos">
+    <div class="boite">
+      <h2>À table aux 2 Plateaux</h2>
+      <div><h3>Horaires</h3><dl id="horaires"></dl><h3 style="margin-top:16px">Adresse</h3><p id="adresse"></p></div>
+      <div><h3>Réserver ou commander</h3><a class="tel" href="tel:+2250151459134">01 51 45 91 34</a><p><a href="mailto:cook@cookafricavip.com">cook@cookafricavip.com</a></p></div>
+    </div>
+  </section>
+  <p class="wrap source">Cook Africa, l'univers des mets africains. Abidjan.</p>
+</main>
+
+<nav class="barre" aria-label="Actions rapides">
+  <a href="#recolte"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Les plats</a>
+  <a class="principal" href="tel:+2250151459134"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h4l2 5-2.5 1.5a11 11 0 0 0 6 6L16 13l5 2v4a2 2 0 0 1-2 2A17 17 0 0 1 3 5a2 2 0 0 1 2-2"/></svg>Appeler</a>
+  <a id="itineraire" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s7-6.2 7-12a7 7 0 0 0-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>Y aller</a>
+</nav>
+
+<script src="assets/menu.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+  const D = window.COOKAFRICA;
+  const REDUIT = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // Six trous de notre côté : cinq rubriques + les signatures de la maison.
+  const TROUS = [
+    ...D.categories.map(c => ({ id: c.id, nom: c.nom.replace(" maison", "").replace(" du pays", ""), plats: D.plats.filter(p => p.cat === c.id) })),
+    { id: "signatures", nom: "Signatures", plats: D.plats.filter(p => p.signature) }
+  ];
+  let choisi = null;
+
+  const trousEl = document.getElementById("trous");
+  TROUS.forEach((t, k) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "trou"; b.dataset.k = k;
+    b.innerHTML = `<b>${t.nom}</b><small>${t.plats.length} graine${t.plats.length > 1 ? "s" : ""}</small>`;
+    b.addEventListener("click", () => semer(k));
+    trousEl.appendChild(b); t.el = b;
+  });
+
+  // ——— La récolte : la liste des plats, qui pousse graine après graine ———
+  const liste = document.getElementById("graines");
+  function recolter(k) {
+    const t = TROUS[k];
+    document.getElementById("titre-recolte").textContent = t.nom === "Signatures" ? "Les signatures de la maison" : t.nom;
+    document.getElementById("vide").hidden = true;
+    liste.innerHTML = "";
+  }
+  function pousser(p) {
+    liste.insertAdjacentHTML("beforeend", `<li><span class="grain ${p.signature ? "or" : ""}" aria-hidden="true"></span><strong>${p.nom}</strong><span class="prix">${formatPrix(p.prix)}</span><p>${p.desc}${p.accomp ? ` Servi avec ${p.accomp.toLowerCase()}.` : ""}</p></li>`);
+  }
+
+  let semer = k => {           // version sans 3D : la liste apparaît directement
+    choisi = k; TROUS.forEach((t, j) => t.el.setAttribute("aria-pressed", j === k));
+    recolter(k); TROUS[k].plats.forEach(pousser);
+  };
+
+  const plateau = document.getElementById("plateau");
+  const webgl = (() => { try { const c = document.createElement("canvas"); return !!(window.THREE && (c.getContext("webgl2") || c.getContext("webgl"))); } catch { return false; } })();
+  if (webgl) awale3D(); else plateau.classList.add("sans3d");
+
+  function awale3D() {
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    renderer.outputEncoding = THREE.sRGBEncoding;
+    renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    plateau.prepend(renderer.domElement);
+    const sc = new THREE.Scene(), cam = new THREE.PerspectiveCamera(34, 1, 0.1, 100);
+    sc.add(new THREE.HemisphereLight(0xfff1d0, 0x3a1d10, 0.75));
+    const soleil = new THREE.DirectionalLight(0xffe2b0, 1.0);
+    soleil.position.set(-3, -4, 9); soleil.castShadow = true; soleil.shadow.mapSize.set(1024, 1024);
+    Object.assign(soleil.shadow.camera, { left: -5, right: 5, top: 5, bottom: -5 }); sc.add(soleil);
+
+    // Bois : grain dessiné dans un canvas
+    const bc = document.createElement("canvas"); bc.width = 1024; bc.height = 256;
+    const g = bc.getContext("2d"); g.fillStyle = "#8A5428"; g.fillRect(0, 0, 1024, 256);
+    for (let i = 0; i < 90; i++) {
+      g.strokeStyle = `rgba(${50 + Math.random() * 40},${25 + Math.random() * 20},10,${.12 + Math.random() * .22})`; g.lineWidth = 1 + Math.random() * 3;
+      g.beginPath(); const y = Math.random() * 256; g.moveTo(0, y);
+      for (let x = 0; x <= 1024; x += 32) g.lineTo(x, y + Math.sin(x / 90 + i) * 6 + Math.sin(x / 23) * 1.5);
+      g.stroke();
+    }
+    const bois = new THREE.CanvasTexture(bc); bois.encoding = THREE.sRGBEncoding; bois.wrapS = bois.wrapT = THREE.RepeatWrapping; bois.repeat.set(.13, .4); bois.offset.set(.5, .5); // évite la couture du motif au centre
+
+    const LX = 6.9, LY = 2.8, EP = 0.45, R = 0.44, PAS = 1.1;
+    const cx = k => -2.75 + k * PAS;              // position des 6 trous en x
+    const RANGS = { nous: -0.62, eux: 0.62 };
+    const forme = new THREE.Shape(); const rr = 1.1;
+    forme.moveTo(-LX / 2 + rr, -LY / 2); forme.lineTo(LX / 2 - rr, -LY / 2); forme.quadraticCurveTo(LX / 2, -LY / 2, LX / 2, -LY / 2 + rr);
+    forme.lineTo(LX / 2, LY / 2 - rr); forme.quadraticCurveTo(LX / 2, LY / 2, LX / 2 - rr, LY / 2); forme.lineTo(-LX / 2 + rr, LY / 2);
+    forme.quadraticCurveTo(-LX / 2, LY / 2, -LX / 2, LY / 2 - rr); forme.lineTo(-LX / 2, -LY / 2 + rr); forme.quadraticCurveTo(-LX / 2, -LY / 2, -LX / 2 + rr, -LY / 2);
+    for (let k = 0; k < 6; k++) for (const y of [RANGS.nous, RANGS.eux]) { const h = new THREE.Path(); h.absarc(cx(k), y, R, 0, Math.PI * 2, true); forme.holes.push(h); }
+    const jeu = new THREE.Group(); sc.add(jeu);
+    const matBois = new THREE.MeshStandardMaterial({ map: bois, roughness: .62, metalness: .02 });
+    const caisse = new THREE.Mesh(new THREE.ExtrudeGeometry(forme, { depth: EP, bevelEnabled: true, bevelThickness: .08, bevelSize: .06, bevelSegments: 4, curveSegments: 40 }), matBois);
+    caisse.castShadow = caisse.receiveShadow = true; jeu.add(caisse);
+    // Pied du plateau
+    const pied = new THREE.Mesh(new THREE.BoxGeometry(LX * .7, LY * .55, .5), new THREE.MeshStandardMaterial({ color: 0x4a2a14, roughness: .9 }));
+    pied.position.z = -.25; pied.receiveShadow = true; jeu.add(pied);
+
+    // Les coupelles creusées sous chaque trou
+    const matCreux = new THREE.MeshStandardMaterial({ color: 0x5A3418, roughness: .9, side: THREE.DoubleSide });
+    const creux = [];
+    for (let k = 0; k < 6; k++) for (const [rang, y] of Object.entries(RANGS)) {
+      const m = new THREE.Mesh(new THREE.SphereGeometry(R, 40, 20, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), matCreux);
+      m.rotation.x = Math.PI / 2; m.scale.set(1, .75, 1); m.position.set(cx(k), y, EP + .08);
+      m.receiveShadow = true; m.userData = { k, rang }; jeu.add(m); creux.push(m);
+    }
+
+    // Les graines : une par plat, grises (gabon) ou dorées pour les signatures
+    const geoGraine = new THREE.SphereGeometry(.105, 18, 12);
+    const matGris = new THREE.MeshStandardMaterial({ color: 0x8C8A78, roughness: .35, metalness: .05 });
+    const matOr = new THREE.MeshStandardMaterial({ color: 0xE2B10A, roughness: .3, metalness: .35 });
+    const fond = EP + .08 - R * .75 + .12;     // fond de coupelle
+    function placeDans(k, rang, n, total) {
+      const a = n / Math.max(total, 1) * Math.PI * 2 + k, d = total > 1 ? .17 + (n % 3) * .03 : 0;
+      return new THREE.Vector3(cx(k) + Math.cos(a) * d, RANGS[rang] + Math.sin(a) * d, fond + Math.floor(n / 5) * .12 + (n % 2) * .04);
+    }
+    TROUS.forEach((t, k) => {
+      t.graines = t.plats.map((p, n) => {
+        const m = new THREE.Mesh(geoGraine, p.signature || t.id === "signatures" ? matOr : matGris);
+        m.scale.set(1, .8, .68); m.rotation.set(Math.random() * 3, Math.random() * 3, Math.random() * 3);
+        m.castShadow = true; m.userData = { k };
+        m.position.copy(placeDans(k, "nous", n, t.plats.length)); m.userData.maison = m.position.clone();
+        jeu.add(m); return m;
+      });
+    });
+
+    // ——— Semer : les graines sautent une à une dans les trous d'en face ———
+    const vols = [];
+    function voler(m, vers, delai, duree, fin) { vols.push({ m, de: m.position.clone(), vers, t0: performance.now() + delai, duree, fin }); lancer(); }
+    let jeton = 0;
+    semer = k => {
+      const j = ++jeton;
+      choisi = k; TROUS.forEach((t, i) => t.el.setAttribute("aria-pressed", i === k));
+      recolter(k);
+      vols.length = 0;
+      TROUS.forEach((t, i) => t.graines.forEach(m => { if (i !== k) { if (REDUIT) m.position.copy(m.userData.maison); else voler(m, m.userData.maison, 0, 320); } }));
+      const gr = TROUS[k].graines, parTrou = {};
+      gr.forEach((m, n) => {
+        // Comme à l'awalé : on sème vers la gauche de l'adversaire, trou après trou.
+        const cible = 5 - (n % 6); parTrou[cible] = (parTrou[cible] || 0) + 1;
+        const vers = placeDans(cible, "eux", parTrou[cible] - 1, 2);
+        const p = TROUS[k].plats[n];
+        if (REDUIT) { m.position.copy(vers); pousser(p); }
+        else voler(m, vers, 260 + n * 240, 480, () => { if (j === jeton) pousser(p); });
+      });
+      if (innerWidth < 1024) setTimeout(() => j === jeton && document.getElementById("recolte").scrollIntoView({ behavior: REDUIT ? "auto" : "smooth", block: "start" }), REDUIT ? 0 : 260 + gr.length * 240 + 500);
+    };
+
+    // Toucher le plateau
+    const ray = new THREE.Raycaster(), ptr = new THREE.Vector2(), incl = { x: 0, y: 0 };
+    function viser(e) {
+      const r = renderer.domElement.getBoundingClientRect();
+      ptr.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+      ray.setFromCamera(ptr, cam);
+      const h = ray.intersectObjects([...creux, ...TROUS.flatMap(t => t.graines)])[0];
+      return h && (h.object.userData.rang === "nous" || h.object.userData.rang === undefined) ? h.object.userData.k : null;
+    }
+    renderer.domElement.addEventListener("click", e => { const k = viser(e); if (k !== null && k !== undefined) semer(k); });
+    renderer.domElement.addEventListener("pointermove", e => {
+      if (e.pointerType === "mouse") renderer.domElement.style.cursor = viser(e) != null ? "pointer" : "default";
+      const r = plateau.getBoundingClientRect(); incl.x = (e.clientX - r.left) / r.width - .5; incl.y = (e.clientY - r.top) / r.height - .5;
+    });
+
+    // Cadrage : plateau horizontal sur grand écran, vertical sur téléphone
+    let vertical = false;
+    function taille() {
+      const w = plateau.clientWidth, h = plateau.clientHeight, a = w / h;
+      renderer.setSize(w, h, false); cam.aspect = a;
+      vertical = a < 1.05;
+      jeu.rotation.z = vertical ? -Math.PI / 2 : 0;
+      jeu.position.x = vertical ? 0.75 : 0;
+      const d = vertical ? 12.4 * Math.max(1, .8 / a) : Math.max(8.4, 13 / a);
+      cam.position.set(0, vertical ? -d * .32 : -d * .62, d); cam.lookAt(vertical ? 0.4 : 0, vertical ? -0.1 : 0.1, 0);
+      cam.updateProjectionMatrix(); lancer();
+    }
+
+    let actif = true, enCours = false;
+    function lancer() { if (!enCours) { enCours = true; requestAnimationFrame(boucle); } }
+    const v = new THREE.Vector3();
+    function boucle(now) {
+      enCours = false;
+      for (let i = vols.length - 1; i >= 0; i--) {
+        const f = vols[i], t = Math.min(Math.max((now - f.t0) / f.duree, 0), 1);
+        if (now < f.t0) continue;
+        const e = t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+        f.m.position.lerpVectors(f.de, f.vers, e); f.m.position.z += Math.sin(Math.PI * t) * (.9 + f.de.distanceTo(f.vers) * .15);
+        f.m.rotation.x += .15; f.m.rotation.y += .1;
+        if (t >= 1) { vols.splice(i, 1); f.fin && f.fin(); }
+      }
+      if (!REDUIT) { jeu.rotation.x += (incl.y * .1 - jeu.rotation.x) * .05; jeu.rotation.y += (incl.x * .12 - jeu.rotation.y) * .05; }
+      renderer.render(sc, cam);
+      // Étiquettes accrochées aux trous de notre côté
+      const w = plateau.clientWidth, h = plateau.clientHeight;
+      TROUS.forEach((t, k) => {
+        v.set(cx(k), RANGS.nous + (vertical ? 0 : -R - .12), EP).applyMatrix4(jeu.matrixWorld).project(cam);
+        const x = (v.x + 1) / 2 * w, y = (1 - v.y) / 2 * h, bw = t.el.offsetWidth, bh = t.el.offsetHeight;
+        t.el.style.transform = vertical ? `translate(${Math.round(x - bw - R * w / 9)}px, ${Math.round(y - bh / 2)}px)` : `translate(${Math.round(x - bw / 2)}px, ${Math.round(y + 6)}px)`;
+      });
+      if (actif && (vols.length || !REDUIT)) lancer();
+    }
+    new IntersectionObserver(([e]) => { actif = e.isIntersecting; if (actif) lancer(); }).observe(plateau);
+    new ResizeObserver(taille).observe(plateau); taille();
+  }
+
+  document.getElementById("horaires").innerHTML = D.infos.horaires.map(x => `<dt>${x.jours}</dt><dd><strong>${x.heures}</strong></dd>`).join("");
+  document.getElementById("adresse").textContent = D.infos.adresse;
+  document.getElementById("itineraire").href = D.infos.itineraire;
+</script>
+</body>
+</html>

@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#8F0A06">
+<title>Cook Africa — Le pays dans l'assiette</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --rouge: #8F0A06;
+    --rouge-fonce: #6E0703;
+    --rouge-vif: #B30807;
+    --or: #F1C50E;
+    --or-pale: #F7E3A1;
+    --lait: #FFF8E6;
+    --serif: "Young Serif", Georgia, serif;
+    --sans: "Outfit", system-ui, sans-serif;
+    --barre: 68px;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html { scroll-behavior: smooth; }
+  body { font-family: var(--sans); background: var(--rouge); color: var(--lait); font-size: 16px; line-height: 1.55; padding-bottom: calc(var(--barre) + env(safe-area-inset-bottom)); -webkit-tap-highlight-color: transparent; }
+  a { color: inherit; }
+  button { font: inherit; color: inherit; }
+  :focus-visible { outline: 3px solid var(--or); outline-offset: 3px; border-radius: 8px; }
+  .wrap { padding: 0 16px; max-width: 1280px; margin: 0 auto; }
+
+  /* En-tête (mobile d'abord) */
+  header .wrap { display: flex; justify-content: space-between; align-items: center; gap: 12px; height: 64px; }
+  .logo { display: block; background: var(--or); padding: 4px; border-radius: 12px; }
+  .logo img { display: block; height: 34px; width: auto; border-radius: 8px; }
+  header nav { display: none; }
+  .btn { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; font-weight: 600; padding: 12px 20px; border-radius: 999px; background: var(--or); color: var(--rouge-fonce); border: 0; cursor: pointer; }
+  .btn:hover { background: var(--lait); }
+
+  h1 { font: 400 clamp(32px, 8.6vw, 72px)/1.04 var(--serif); color: var(--or); letter-spacing: -0.015em; margin-top: 8px; }
+  .chapo { margin-top: 12px; color: var(--or-pale); max-width: 30em; }
+
+  /* La carte 3D */
+  .scene { position: relative; width: 100%; aspect-ratio: 1 / 1.02; max-height: 74vh; margin: 8px auto 0; touch-action: pan-y; }
+  .scene canvas, .scene svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .etiquettes { position: absolute; inset: 0; pointer-events: none; }
+  .etiquette { position: absolute; left: 0; top: 0; pointer-events: auto; display: inline-flex; align-items: center; gap: 6px; padding: 6px 11px 6px 8px; border-radius: 999px; border: 0; background: rgba(110,7,3,.82); color: var(--lait); font-weight: 500; font-size: 14px; white-space: nowrap; cursor: pointer; backdrop-filter: blur(4px); box-shadow: 0 2px 10px rgba(0,0,0,.25); transition: background .2s, color .2s; will-change: transform; }
+  .etiquette::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--or); }
+  .etiquette.gauche { flex-direction: row-reverse; padding: 6px 8px 6px 11px; }
+  .etiquette[aria-pressed="true"] { background: var(--or); color: var(--rouge-fonce); font-weight: 600; }
+  .etiquette[aria-pressed="true"]::before { background: var(--rouge-vif); }
+  .resto { position: absolute; left: 0; top: 0; pointer-events: none; font-size: 12px; font-weight: 600; color: var(--or); text-shadow: 0 1px 4px rgba(0,0,0,.6); white-space: nowrap; }
+  .source { font-size: 12px; color: var(--or-pale); opacity: .75; margin-top: 4px; }
+  .source a { text-underline-offset: 3px; }
+
+  /* La carte en stories */
+  .panneau { margin-top: 20px; padding: 0 16px 40px; scroll-margin-top: 8px; }
+  .panneau-tete { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+  .panneau h2 { font: 400 clamp(26px, 6.4vw, 36px)/1.1 var(--serif); color: var(--or); }
+  .tout { font-weight: 600; font-size: 15px; background: none; border: 0; color: var(--or-pale); text-decoration: underline; text-underline-offset: 4px; cursor: pointer; padding: 6px 0; }
+  .tout[hidden] { display: none; }
+  #stories { --ck-titre: var(--sans); --ck-texte: var(--sans); --ck-couv-fond: var(--or); --ck-couv-txt: var(--rouge-fonce); --ck-hauteur: min(80dvh, 720px); }
+
+  /* Infos */
+  .infos { background: var(--rouge-fonce); padding: 40px 0; }
+  .infos .wrap { display: grid; gap: 28px; }
+  .infos h2 { font: 400 clamp(26px, 6vw, 40px)/1.1 var(--serif); color: var(--or); }
+  .infos h3 { font-weight: 600; font-size: 16px; color: var(--or); margin-bottom: 8px; }
+  .infos table { border-collapse: collapse; }
+  .infos td { padding: 3px 18px 3px 0; }
+  .infos .tel { font: 400 26px var(--serif); text-decoration: none; display: inline-block; margin-bottom: 4px; }
+  footer { padding: 20px 0 28px; font-size: 13px; color: var(--or-pale); }
+
+  /* Barre d'actions mobile */
+  .barre { position: fixed; z-index: 20; left: 0; right: 0; bottom: 0; height: calc(var(--barre) + env(safe-area-inset-bottom)); padding: 8px 12px calc(8px + env(safe-area-inset-bottom)); display: grid; grid-template-columns: 1fr 1.3fr 1fr; gap: 8px; background: rgba(110,7,3,.94); backdrop-filter: blur(10px); border-top: 1px solid rgba(241,197,14,.35); }
+  .barre a { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; border-radius: 14px; text-decoration: none; font-size: 13px; font-weight: 500; }
+  .barre a.principal { background: var(--or); color: var(--rouge-fonce); font-weight: 600; flex-direction: row; gap: 8px; font-size: 15px; }
+  .barre svg { width: 20px; height: 20px; }
+
+  @media (min-width: 720px) {
+    .wrap { padding: 0 32px; }
+    .panneau { padding: 0 32px 48px; }
+    .infos .wrap { grid-template-columns: 1.2fr 1fr 1fr; }
+  }
+  @media (min-width: 1024px) {
+    body { padding-bottom: 0; font-size: 17px; }
+    .barre { display: none; }
+    header .wrap { height: 88px; }
+    .logo img { height: 46px; }
+    header nav { display: flex; align-items: center; gap: 28px; }
+    header nav a.lien { text-decoration: none; }
+    header nav a.lien:hover { color: var(--or); }
+    .pays { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 48px; align-items: start; max-width: 1280px; margin: 0 auto; padding: 0 32px 72px; }
+    .pays > .wrap { padding: 0; position: sticky; top: 16px; }
+    h1 { font-size: clamp(40px, 3.8vw, 56px); }
+    .scene { height: calc(100vh - 330px); min-height: 420px; max-height: none; aspect-ratio: auto; }
+    .panneau { margin: 0; padding: 8px 0 0; }
+    #stories { --ck-hauteur: min(84vh, 780px); max-width: 440px; }
+  }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; animation: none !important; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <a class="logo" href="#"><img src="assets/logo.jpg" alt="Cook Africa, l'univers des mets africains"></a>
+    <nav aria-label="Navigation principale">
+      <a class="lien" href="#infos">Horaires et adresse</a>
+      <a class="btn" href="tel:+2250151459134">Appeler le 01 51 45 91 34</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="pays">
+    <section class="wrap">
+      <h1>Toute la Côte d'Ivoire tient dans notre carte.</h1>
+      <p class="chapo">Chaque plat vient d'une région. Touchez une région pour voir ce qu'on y mange.</p>
+      <div class="scene" id="scene">
+        <div class="etiquettes" id="etiquettes" role="group" aria-label="Régions de Côte d'Ivoire"></div>
+      </div>
+      <p class="source">Frontières des 14 districts : <a href="https://www.geoboundaries.org" target="_blank" rel="noopener">geoBoundaries</a> (CC BY 4.0).</p>
+    </section>
+
+    <aside class="panneau" id="panneau">
+      <div class="panneau-tete">
+        <h2 id="titre">La carte</h2>
+        <button class="tout" id="tout" type="button" hidden>Voir tout le pays</button>
+      </div>
+      <div id="stories" aria-label="La carte en stories"></div>
+    </aside>
+  </div>
+
+  <section class="infos" id="infos">
+    <div class="wrap">
+      <h2>On vous attend aux 2 Plateaux.</h2>
+      <div>
+        <h3>Horaires</h3>
+        <table id="horaires"></table>
+        <h3 style="margin-top:18px">Adresse</h3>
+        <p id="adresse"></p>
+      </div>
+      <div>
+        <h3>Réserver ou commander</h3>
+        <a class="tel" href="tel:+2250151459134">01 51 45 91 34</a><br>
+        <a href="mailto:cook@cookafricavip.com">cook@cookafricavip.com</a>
+      </div>
+    </div>
+  </section>
+</main>
+<footer><div class="wrap">Cook Africa, l'univers des mets africains. Abidjan.</div></footer>
+
+<nav class="barre" aria-label="Actions rapides">
+  <a href="#panneau"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>La carte</a>
+  <a class="principal" href="tel:+2250151459134"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h4l2 5-2.5 1.5a11 11 0 0 0 6 6L16 13l5 2v4a2 2 0 0 1-2 2A17 17 0 0 1 3 5a2 2 0 0 1 2-2"/></svg>Appeler</a>
+  <a id="itineraire" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s7-6.2 7-12a7 7 0 0 0-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>Y aller</a>
+</nav>
+
+<script src="assets/menu.js"></script>
+<script src="assets/civ-districts.js"></script>
+<script src="assets/recits.js"></script>
+<script src="assets/assiette.js"></script>
+<script src="assets/composants/stories.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+  const D = window.COOKAFRICA, G = window.CIV, V = G.villes;
+  const REDUIT = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // Zones gourmandes = regroupements des districts réels. `ancre` en coordonnées projetées.
+  const ZONES = {
+    nord:    { nom: "Le Nord",     ancre: V["Korhogo"],     peuple: "Savanes, Denguélé, Woroba et Zanzan. Pays sénoufo et malinké.", texte: "Tô de maïs, gombo sec, mouton grillé et dêguê frais." },
+    ouest:   { nom: "L'Ouest",     ancre: [-150, 40],       peuple: "Montagnes, Haut-Sassandra, Gôh et Bas-Sassandra. Pays bété et wè.", texte: "La graine de palme et le tikriti, les goûts francs de la forêt." },
+    centre:  { nom: "Le Centre",   ancre: V["Bouaké"],      peuple: "Vallée du Bandama, Lacs et Yamoussoukro. Pays baoulé.", texte: "Le foutou pilé, le kedjenou cuit en canari, la sauce arachide." },
+    est:     { nom: "L'Est",       ancre: V["Abengourou"],  peuple: "Comoé. Pays agni.", texte: "Soupe d'escargot et bangui tiré du palmier." },
+    sud:     { nom: "Les lagunes", ancre: [96, 160], gauche: true, peuple: "Lagunes. Pays adjoukrou, ébrié et attié.", texte: "L'attiéké, le biokosseu, le poisson braisé du bord de l'eau." },
+    abidjan: { nom: "Abidjan",     ancre: V["Abidjan"],     peuple: "La ville.", texte: "Les classiques du maquis : alloco, poulet braisé, bissap glacé." }
+  };
+
+  let zone = null;
+  const lab = document.getElementById("etiquettes");
+  Object.entries(ZONES).forEach(([id, z]) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "etiquette" + (z.gauche ? " gauche" : ""); b.textContent = z.nom; b.dataset.id = id;
+    b.addEventListener("click", () => choisir(id));
+    lab.appendChild(b); z.el = b;
+  });
+  const resto = document.createElement("span");
+  resto.className = "resto"; resto.textContent = "Cook Africa"; lab.appendChild(resto);
+
+  function choisir(id) { zone = zone === id ? null : id; rendre(); carte3d?.selection(zone); }
+
+  // ——— La carte en stories, filtrée par la région choisie ———
+  const stories = CookStories.monter(document.getElementById("stories"), { categories: D.categories, recits: window.RECITS, telHref: D.infos.telHref });
+  document.getElementById("tout").addEventListener("click", () => choisir(zone));
+  let premierRendu = true;
+
+  function rendre() {
+    Object.entries(ZONES).forEach(([id, z]) => z.el.setAttribute("aria-pressed", id === zone));
+    const z = ZONES[zone];
+    document.getElementById("tout").hidden = !z;
+    stories.afficher(D.plats.filter(p => !zone || p.region === zone),
+      z ? z.nom : "Toute la carte",
+      z ? `${z.peuple} ${z.texte}` : "Les plats de tout le pays, des entrées aux boissons maison.");
+    // Sur téléphone, on amène les stories sous les yeux après le choix d'une région.
+    if (!premierRendu && zone && innerWidth < 1024) document.getElementById("panneau").scrollIntoView({ behavior: REDUIT ? "auto" : "smooth", block: "start" });
+    premierRendu = false;
+  }
+
+  // ——— Carte 3D (Three.js), avec repli SVG ———
+  const scene = document.getElementById("scene");
+  const S = 0.01; // coordonnées projetées → unités 3D
+  let carte3d = null;
+  const webgl = (() => { try { const c = document.createElement("canvas"); return !!(window.THREE && (c.getContext("webgl2") || c.getContext("webgl"))); } catch { return false; } })();
+  if (webgl) carte3d = creerCarte3D(); else creerCarteSVG();
+
+  function creerCarte3D() {
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    scene.prepend(renderer.domElement);
+    const sc = new THREE.Scene();
+    const cam = new THREE.PerspectiveCamera(32, 1, 0.1, 100);
+    cam.position.set(0, -6.4, 11); cam.lookAt(0, 0.25, 0);
+    sc.add(new THREE.AmbientLight(0xffe8c0, 0.62));
+    const soleil = new THREE.DirectionalLight(0xfff1d0, 0.95); soleil.position.set(-4, -5, 9); sc.add(soleil);
+    const pays = new THREE.Group(); sc.add(pays);
+
+    const C = { haut: new THREE.Color("#7E0B06"), cote: new THREE.Color("#4A0402"), hautOn: new THREE.Color("#F1C50E"), coteOn: new THREE.Color("#B88A00"), survol: new THREE.Color("#9C1A10") };
+    const EP = 0.16;
+    const blocs = G.districts.map((d, i) => {
+      const g = new THREE.Group();
+      d.rings.forEach(r => {
+        const pts = []; for (let k = 0; k < r.length; k += 2) pts.push(new THREE.Vector2(r[k] * S, -r[k + 1] * S));
+        const shape = new THREE.Shape(pts);
+        const geo = new THREE.ExtrudeGeometry(shape, { depth: EP, bevelEnabled: false });
+        const mats = [new THREE.MeshStandardMaterial({ color: C.haut.clone(), roughness: .75, metalness: .05 }), new THREE.MeshStandardMaterial({ color: C.cote.clone(), roughness: .9 })];
+        const m = new THREE.Mesh(geo, mats); m.userData.zone = d.zone; g.add(m);
+        const ligne = new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts.map(p => new THREE.Vector3(p.x, p.y, EP + 0.002))), new THREE.LineBasicMaterial({ color: 0xF1C50E, transparent: true, opacity: .85 }));
+        g.add(ligne);
+      });
+      g.userData = { zone: d.zone, z: REDUIT ? 0 : 1.6 + i * 0.12, delai: i * 45 };
+      g.position.z = g.userData.z;
+      pays.add(g);
+      return g;
+    });
+
+    // Repère du restaurant à Abidjan (2 Plateaux)
+    const A = V["Abidjan"], pin = new THREE.Group();
+    const tige = new THREE.Mesh(new THREE.ConeGeometry(0.07, 0.34, 20), new THREE.MeshStandardMaterial({ color: 0xF1C50E, roughness: .4, metalness: .3 }));
+    tige.rotation.x = -Math.PI / 2; tige.position.z = 0.17;
+    const tete = new THREE.Mesh(new THREE.SphereGeometry(0.1, 24, 16), tige.material); tete.position.z = 0.38;
+    pin.add(tige, tete); pin.position.set(A[0] * S + 0.06, -A[1] * S + 0.04, EP); pays.add(pin);
+
+    // Interaction : survol et toucher
+    const ray = new THREE.Raycaster(), souris = new THREE.Vector2(), incl = { x: 0, y: 0 };
+    let survol = null;
+    function viser(e) {
+      const r = renderer.domElement.getBoundingClientRect();
+      souris.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+      ray.setFromCamera(souris, cam);
+      const hit = ray.intersectObjects(pays.children, true).find(h => h.object.userData.zone);
+      return hit ? hit.object.userData.zone : null;
+    }
+    renderer.domElement.addEventListener("pointermove", e => {
+      if (e.pointerType === "mouse") { survol = viser(e); renderer.domElement.style.cursor = survol ? "pointer" : "default"; }
+      const r = renderer.domElement.getBoundingClientRect();
+      incl.x = ((e.clientX - r.left) / r.width - .5); incl.y = ((e.clientY - r.top) / r.height - .5);
+    });
+    renderer.domElement.addEventListener("pointerleave", () => { survol = null; incl.x = incl.y = 0; });
+    renderer.domElement.addEventListener("click", e => { const z = viser(e); if (z) choisir(z); });
+
+    function taille() {
+      const w = scene.clientWidth, h = scene.clientHeight;
+      renderer.setSize(w, h, false); cam.aspect = w / h;
+      // Recule la caméra sur écran étroit pour que tout le pays tienne.
+      const d = Math.max(10.8, 10 / (w / h));
+      cam.position.set(0, -d * 0.58, d); cam.lookAt(0, 0.25, 0);
+      cam.updateProjectionMatrix();
+      lancer();
+    }
+    let actif = true, enCours = false;
+    const lancer = () => { if (!enCours) { enCours = true; requestAnimationFrame(boucle); } };
+    new ResizeObserver(taille).observe(scene); taille();
+    new IntersectionObserver(([e]) => { actif = e.isIntersecting; if (actif) lancer(); }).observe(scene);
+
+    const v = new THREE.Vector3(), t0 = performance.now();
+    function boucle(now) {
+      enCours = false;
+      if (!actif) return;
+      const t = (now - t0) / 1000;
+      blocs.forEach(g => {
+        const u = g.userData, on = u.zone === zone, hov = u.zone === survol;
+        if (now - t0 > u.delai || REDUIT) u.z += ((on ? 0.34 : hov ? 0.08 : 0) - u.z) * (REDUIT ? 1 : 0.14);
+        g.position.z = u.z;
+        g.children.forEach(m => { if (m.isMesh) {
+          m.material[0].color.lerp(on ? C.hautOn : hov ? C.survol : C.haut, 0.15);
+          m.material[1].color.lerp(on ? C.coteOn : C.cote, 0.15);
+        }});
+      });
+      if (!REDUIT) {
+        pays.rotation.x += (incl.y * 0.12 - pays.rotation.x) * 0.05;
+        pays.rotation.y += (incl.x * 0.18 - pays.rotation.y) * 0.05;
+        pin.position.z = EP + 0.06 + Math.abs(Math.sin(t * 2.2)) * 0.12 + (zone === "abidjan" ? 0.34 : 0);
+      } else pin.position.z = EP + (zone === "abidjan" ? 0.34 : 0);
+      renderer.render(sc, cam);
+      // Étiquettes HTML accrochées aux points 3D
+      const w = scene.clientWidth, h = scene.clientHeight;
+      Object.entries(ZONES).forEach(([id, z]) => {
+        v.set(z.ancre[0] * S, -z.ancre[1] * S, EP + (id === zone ? 0.34 : 0)).applyMatrix4(pays.matrixWorld).project(cam);
+        const x = (v.x + 1) / 2 * w, y = (1 - v.y) / 2 * h, bw = z.el.offsetWidth, bh = z.el.offsetHeight;
+        z.el.style.transform = `translate(${Math.round(z.gauche ? x - bw + 8 : x - 8)}px, ${Math.round(y - bh / 2)}px)`;
+      });
+      v.set(pin.position.x, pin.position.y, pin.position.z + 0.5).applyMatrix4(pays.matrixWorld).project(cam);
+      resto.style.transform = `translate(${Math.round((v.x + 1) / 2 * w - resto.offsetWidth - 8)}px, ${Math.round((1 - v.y) / 2 * h - 6)}px)`;
+      if (!REDUIT || now - t0 < 100) lancer();
+    }
+    lancer();
+    return { selection: lancer };
+  }
+
+  function creerCarteSVG() {
+    const NS = "http://www.w3.org/2000/svg", svg = document.createElementNS(NS, "svg");
+    svg.setAttribute("viewBox", "-320 -340 640 680"); svg.setAttribute("aria-hidden", "true");
+    G.districts.forEach(d => d.rings.forEach(r => {
+      const p = document.createElementNS(NS, "path");
+      p.setAttribute("d", "M" + r.join(" ").replace(/(\S+) (\S+)/g, "$1,$2 L").replace(/ L$/, "") + "Z");
+      p.setAttribute("fill", "#7E0B06"); p.setAttribute("stroke", "#F1C50E"); p.setAttribute("stroke-width", "1.5");
+      p.dataset.zone = d.zone; p.style.cursor = "pointer";
+      p.addEventListener("click", () => choisir(d.zone));
+      svg.appendChild(p);
+    }));
+    scene.prepend(svg);
+    const maj = () => {
+      svg.querySelectorAll("path").forEach(p => p.setAttribute("fill", p.dataset.zone === zone ? "#F1C50E" : "#7E0B06"));
+      const r = svg.getBoundingClientRect(), k = Math.min(r.width / 640, r.height / 680), ox = r.width / 2, oy = r.height / 2;
+      Object.values(ZONES).forEach(z => { const bw = z.el.offsetWidth, bh = z.el.offsetHeight, x = ox + z.ancre[0] * k, y = oy + z.ancre[1] * k; z.el.style.transform = `translate(${x - (z.gauche ? bw - 8 : 8)}px, ${y - bh / 2}px)`; });
+      resto.style.transform = `translate(${ox + V["Abidjan"][0] * k + 10}px, ${oy + V["Abidjan"][1] * k + 14}px)`;
+    };
+    new ResizeObserver(maj).observe(scene);
+    carte3d = { selection: maj };
+  }
+
+  rendre();
+  document.getElementById("horaires").innerHTML = D.infos.horaires.map(x => `<tr><td>${x.jours}</td><td><strong>${x.heures}</strong></td></tr>`).join("");
+  document.getElementById("adresse").textContent = D.infos.adresse;
+  document.getElementById("itineraire").href = D.infos.itineraire;
+</script>
+</body>
+</html>

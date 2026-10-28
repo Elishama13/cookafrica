@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#B30807">
+<title>Cook Africa — La carte en stories</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Onest:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --or: #F1C50E; --rouge: #B30807; --braise: #E8550F; --cacao: #24120B; --encre: #000; --lait: #FFF8E6; --lie: #6E0703;
+    --display: "Bricolage Grotesque", system-ui, sans-serif;
+    --texte: "Onest", system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; }
+  body { font-family: var(--texte); background: var(--encre); color: var(--lait); font-size: 16px; line-height: 1.5; overflow: hidden; -webkit-tap-highlight-color: transparent; }
+  a { color: inherit; }
+  button { font: inherit; color: inherit; }
+  :focus-visible { outline: 3px solid var(--or); outline-offset: 3px; border-radius: 8px; }
+
+  /* Le cadre des stories : plein écran sur mobile */
+  .cadre { position: relative; height: 100dvh; width: 100%; overflow: hidden; }
+  .fil { height: 100%; overflow-y: auto; scroll-snap-type: y mandatory; overscroll-behavior: contain; scrollbar-width: none; }
+  .fil::-webkit-scrollbar { display: none; }
+  .story { position: relative; height: 100%; scroll-snap-align: start; scroll-snap-stop: always; display: grid; grid-template-rows: 1fr auto; padding: calc(118px + env(safe-area-inset-top)) 20px calc(22px + env(safe-area-inset-bottom)); overflow: hidden; background: var(--fond); color: var(--txt); }
+  .story::before { content: ""; position: absolute; inset: 0; background: radial-gradient(70% 45% at 50% 36%, rgba(255,255,255,.16), transparent 70%); pointer-events: none; }
+
+  /* Visuel */
+  .visuel { position: relative; display: grid; place-items: center; min-height: 0; }
+  .visuel .plat { width: min(80vw, 44dvh, 420px); aspect-ratio: 1; filter: drop-shadow(0 24px 34px rgba(0,0,0,.4)); transition: transform .7s cubic-bezier(.2,.9,.25,1.15), opacity .5s; transform: rotate(-30deg) scale(.82); opacity: 0; }
+  .visuel .plat svg, .visuel .plat img { width: 100%; height: 100%; display: block; object-fit: cover; border-radius: 50%; }
+  .story.vue .plat { transform: none; opacity: 1; }
+  .vapeur { position: absolute; top: 4%; left: 50%; width: 120px; height: 120px; transform: translateX(-50%); pointer-events: none; opacity: 0; transition: opacity .6s .3s; }
+  .story.vue .vapeur { opacity: 1; }
+  .vapeur i { position: absolute; bottom: 0; width: 28px; height: 70px; border-radius: 50%; background: rgba(255,255,255,.5); filter: blur(10px); animation: monte 3.4s ease-in infinite; }
+  .vapeur i:nth-child(1) { left: 20px; } .vapeur i:nth-child(2) { left: 48px; animation-delay: 1.1s; } .vapeur i:nth-child(3) { left: 76px; animation-delay: 2.2s; }
+  @keyframes monte { 0% { transform: translateY(30px) scaleX(.6); opacity: 0; } 30% { opacity: .9; } 100% { transform: translateY(-60px) scaleX(1.4); opacity: 0; } }
+
+  /* Texte */
+  .texte { position: relative; display: grid; gap: 6px; }
+  .origine { font-size: 14px; font-weight: 500; opacity: .85; }
+  .story h2 { font: 800 clamp(34px, 10vw, 56px)/.98 var(--display); letter-spacing: -0.02em; }
+  .desc { font-size: 16px; max-width: 30em; opacity: .92; }
+  .pied { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 10px; }
+  .prix { font: 800 26px var(--display); }
+  .commander { display: inline-flex; align-items: center; gap: 8px; padding: 13px 18px; border-radius: 999px; background: var(--txt); color: var(--fond); text-decoration: none; font-weight: 600; }
+  .commander svg { width: 18px; height: 18px; }
+  .sceau { display: inline-block; justify-self: start; font-size: 13px; font-weight: 600; padding: 3px 10px; border-radius: 999px; border: 1.5px solid currentColor; }
+
+  /* Couverture et fin */
+  .couverture { grid-template-rows: auto 1fr auto; gap: 24px; padding-top: calc(28px + env(safe-area-inset-top)); }
+  .couverture > div:last-of-type, .couverture > div:nth-of-type(2) { align-self: end; }
+  .couverture { grid-template-rows: auto 1fr auto auto; }
+  .eventail { position: relative; align-self: center; height: min(34dvh, 280px); }
+  .eventail div { position: absolute; top: 50%; left: 50%; width: min(42vw, 24dvh, 190px); aspect-ratio: 1; filter: drop-shadow(0 16px 24px rgba(0,0,0,.35)); animation: deploie .9s cubic-bezier(.2,.9,.25,1.2) backwards; }
+  .eventail div:nth-child(1) { transform: translate(-108%, -44%) rotate(-14deg); animation-delay: .1s; }
+  .eventail div:nth-child(2) { transform: translate(-50%, -58%); z-index: 1; }
+  .eventail div:nth-child(3) { transform: translate(12%, -42%) rotate(12deg); animation-delay: .2s; }
+  @keyframes deploie { from { transform: translate(-50%, -50%) scale(.6); opacity: 0; } }
+  .couverture img { height: 46px; width: auto; border-radius: 10px; justify-self: start; }
+  .couverture h1 { font: 800 clamp(44px, 13vw, 72px)/.95 var(--display); letter-spacing: -0.025em; align-self: end; }
+  .couverture p { font-size: 18px; margin-top: 12px; max-width: 22em; }
+  .glisser { display: grid; justify-items: center; gap: 4px; font-weight: 600; font-size: 15px; margin-top: 28px; }
+  .glisser svg { width: 30px; height: 30px; animation: invite 1.6s ease-in-out infinite; }
+  @keyframes invite { 50% { transform: translateY(-10px); } }
+  .fin { grid-template-rows: 1fr auto; }
+  .fin h2 { align-self: end; }
+  .fin dl { display: grid; grid-template-columns: auto 1fr; gap: 4px 16px; margin: 14px 0; }
+  .fin .actions { display: grid; gap: 10px; margin-top: 8px; }
+  .fin .actions a { justify-content: center; }
+  .fin .secondaire { background: transparent; color: var(--txt); box-shadow: inset 0 0 0 2px currentColor; }
+  .recommencer { background: none; border: 0; text-decoration: underline; text-underline-offset: 4px; cursor: pointer; padding: 8px 0; font-weight: 500; justify-self: center; }
+
+  /* Barre du haut : progression + rubriques */
+  .haut { position: absolute; z-index: 5; top: 0; left: 0; right: 0; padding: calc(10px + env(safe-area-inset-top)) 12px 10px; background: linear-gradient(rgba(0,0,0,.35), transparent); pointer-events: none; transition: opacity .3s; }
+  .haut.cache { opacity: 0; }
+  .haut > * { pointer-events: auto; }
+  .barres { display: flex; gap: 4px; }
+  .barres span { flex: 1; height: 3px; border-radius: 3px; background: rgba(255,255,255,.35); overflow: hidden; }
+  .barres span i { display: block; height: 100%; width: 0; background: #fff; transition: width .3s; }
+  .barres span.fait i { width: 100%; }
+  .rubriques { display: flex; gap: 6px; margin: 12px -12px 0; padding: 0 12px; overflow-x: auto; scrollbar-width: none; }
+  .rubriques::-webkit-scrollbar { display: none; }
+  .rubriques button { flex: none; padding: 8px 14px; border-radius: 999px; border: 0; background: rgba(0,0,0,.28); color: #fff; font-weight: 600; font-size: 14px; cursor: pointer; backdrop-filter: blur(6px); }
+  .rubriques button[aria-current="true"] { background: #fff; color: #000; }
+  .compteur { position: absolute; right: 14px; top: calc(22px + env(safe-area-inset-top)); font-size: 12px; font-weight: 600; color: #fff; opacity: .8; display: none; }
+
+  /* Ordinateur : la story au centre, l'index à droite */
+  .cote { display: none; }
+  @media (min-width: 1000px) {
+    body { display: grid; grid-template-columns: 1fr minmax(380px, 440px) 1fr; gap: 48px; align-items: center; padding: 0 40px; background: #120905; }
+    .cadre { grid-column: 2; height: min(92vh, 880px); border-radius: 32px; box-shadow: 0 30px 80px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.08); }
+    .story { padding-top: 120px; }
+    .visuel .plat { width: min(340px, 42vh); }
+    .cote { display: block; max-height: 88vh; overflow: auto; scrollbar-width: thin; }
+    .cote.gauche { grid-column: 1; grid-row: 1; justify-self: end; max-width: 340px; }
+    .cote.droite { grid-column: 3; max-width: 360px; }
+    .cote h1 { font: 800 44px/1 var(--display); color: var(--or); letter-spacing: -0.02em; }
+    .cote p { margin-top: 14px; color: #d9c7b0; }
+    .cote .touches { margin-top: 18px; font-size: 14px; color: #a8927a; }
+    .cote kbd { font: 600 13px var(--texte); padding: 2px 7px; border-radius: 6px; border: 1px solid #5a4636; }
+    .cote img { height: 54px; border-radius: 10px; margin-bottom: 28px; }
+    .index h3 { font: 600 15px var(--texte); color: var(--or); margin: 18px 0 4px; }
+    .index button { display: flex; justify-content: space-between; gap: 16px; width: 100%; background: none; border: 0; padding: 6px 8px; margin: 0 -8px; border-radius: 8px; text-align: left; color: #e8d9c4; cursor: pointer; }
+    .index button:hover { background: rgba(255,255,255,.06); }
+    .index button[aria-current="true"] { background: rgba(241,197,14,.14); color: #fff; }
+    .index button span:last-child { color: #a8927a; white-space: nowrap; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .visuel .plat { transition: none; transform: none; opacity: 1; }
+    .vapeur, .glisser svg { animation: none; display: none; }
+    .eventail div { animation: none; }
+    .barres span i { transition: none; }
+  }
+</style>
+</head>
+<body>
+<aside class="cote gauche">
+  <img src="assets/logo.jpg" alt="Cook Africa">
+  <h1>La carte, un plat à la fois.</h1>
+  <p>Faites défiler pour découvrir chaque plat, ou choisissez-le directement dans la liste.</p>
+  <p class="touches"><kbd>↑</kbd> <kbd>↓</kbd> pour naviguer</p>
+</aside>
+
+<div class="cadre">
+  <div class="haut" id="haut">
+    <div class="barres" id="barres" aria-hidden="true"></div>
+    <nav class="rubriques" id="rubriques" aria-label="Rubriques"></nav>
+  </div>
+  <main class="fil" id="fil" tabindex="0" aria-label="La carte en stories"></main>
+</div>
+
+<aside class="cote droite index" id="index" aria-label="Tous les plats"></aside>
+
+<script src="assets/menu.js"></script>
+<script src="assets/recits.js"></script>
+<script src="assets/assiette.js"></script>
+<script>
+  const D = window.COOKAFRICA, R = window.RECITS;
+  // Une couleur de fond et de texte par rubrique, prises dans la palette du logo.
+  const TEINTES = {
+    entrees:   { fond: "#E8550F", txt: "#FFF8E6" },
+    plats:     { fond: "#B30807", txt: "#FFF8E6" },
+    grillades: { fond: "#24120B", txt: "#F1C50E" },
+    desserts:  { fond: "#F1C50E", txt: "#3A0A04" },
+    boissons:  { fond: "#6E0703", txt: "#F7E3A1" }
+  };
+  const CHAUD = new Set(["entrees", "plats", "grillades"]);
+  const tel = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h4l2 5-2.5 1.5a11 11 0 0 0 6 6L16 13l5 2v4a2 2 0 0 1-2 2A17 17 0 0 1 3 5a2 2 0 0 1 2-2"/></svg>`;
+
+  // Ordre des stories : rubrique par rubrique
+  const plats = D.categories.flatMap(c => D.plats.filter(p => p.cat === c.id));
+  const fil = document.getElementById("fil");
+  let html = `
+    <article class="story couverture" style="--fond:#B30807;--txt:#FFF8E6" data-i="-1" aria-label="Couverture">
+      <img src="assets/logo.jpg" alt="Cook Africa, l'univers des mets africains">
+      <div class="eventail" aria-hidden="true">${plats.filter(p => p.signature).slice(0, 3).map(p => `<div>${illustration(p)}</div>`).join("")}</div>
+      <div>
+        <h1>${plats.length} plats, une histoire chacun.</h1>
+        <p>Glissez vers le haut pour feuilleter la carte. Touchez une rubrique pour y aller directement.</p>
+      </div>
+      <div class="glisser" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 14l6-6 6 6"/></svg>Glisser</div>
+    </article>`;
+  plats.forEach((p, i) => {
+    const t = TEINTES[p.cat], r = R[p.nom] || {};
+    html += `
+    <article class="story" style="--fond:${t.fond};--txt:${t.txt}" data-i="${i}" data-cat="${p.cat}" aria-label="${p.nom}, ${formatPrix(p.prix)}">
+      <div class="visuel">
+        ${CHAUD.has(p.cat) ? '<div class="vapeur" aria-hidden="true"><i></i><i></i><i></i></div>' : ""}
+        <div class="plat">${p.photo ? `<img src="${p.photo}" alt="${p.nom}" loading="lazy">` : illustration(p)}</div>
+      </div>
+      <div class="texte">
+        ${p.signature ? '<span class="sceau">Signature de la maison</span>' : ""}
+        <span class="origine">${r.origine || ""}${p.accomp ? `, servi avec ${p.accomp.toLowerCase()}` : ""}</span>
+        <h2>${p.nom}</h2>
+        <p class="desc">${p.desc}</p>
+        <div class="pied">
+          <span class="prix">${formatPrix(p.prix)}</span>
+          <a class="commander" href="${D.infos.telHref}">${tel}Commander</a>
+        </div>
+      </div>
+    </article>`;
+  });
+  html += `
+    <article class="story fin" style="--fond:#24120B;--txt:#FFF8E6" data-i="${plats.length}" aria-label="Infos pratiques">
+      <div></div>
+      <div class="texte">
+        <h2>On vous garde une table ?</h2>
+        <dl>${D.infos.horaires.map(h => `<dt>${h.jours}</dt><dd><strong>${h.heures}</strong></dd>`).join("")}</dl>
+        <p class="desc">${D.infos.adresse}</p>
+        <div class="actions">
+          <a class="commander" href="${D.infos.telHref}">${tel}Appeler le ${D.infos.tel}</a>
+          <a class="commander secondaire" href="${D.infos.itineraire}" target="_blank" rel="noopener">Voir l'itinéraire</a>
+          <button class="recommencer" type="button" id="recommencer">Revoir la carte depuis le début</button>
+        </div>
+      </div>
+    </article>`;
+  fil.innerHTML = html;
+  const stories = [...fil.querySelectorAll(".story")];
+
+  // Barres de progression (une par plat de la rubrique en cours) et rubriques
+  const barres = document.getElementById("barres"), rub = document.getElementById("rubriques"), haut = document.getElementById("haut");
+  D.categories.forEach(c => {
+    const b = document.createElement("button");
+    b.type = "button"; b.textContent = c.nom; b.dataset.cat = c.id;
+    b.addEventListener("click", () => aller(plats.findIndex(p => p.cat === c.id) + 1));
+    rub.appendChild(b);
+  });
+  // Index (ordinateur)
+  const index = document.getElementById("index");
+  index.innerHTML = D.categories.map(c => `<h3>${c.nom}</h3>` + plats.map((p, i) => p.cat === c.id ? `<button type="button" data-go="${i + 1}"><span>${p.nom}</span><span>${formatPrix(p.prix)}</span></button>` : "").join("")).join("");
+  index.addEventListener("click", e => { const b = e.target.closest("[data-go]"); if (b) aller(+b.dataset.go); });
+
+  let courant = 0;
+  function aller(n) { n = Math.max(0, Math.min(stories.length - 1, n)); stories[n].scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }); }
+  document.getElementById("recommencer").addEventListener("click", () => aller(0));
+
+  function majInterface(n) {
+    courant = n;
+    const s = stories[n], cat = s.dataset.cat, i = +s.dataset.i;
+    haut.classList.toggle("cache", !cat);
+    const memes = plats.map((p, k) => [p, k]).filter(([p]) => p.cat === cat);
+    barres.innerHTML = memes.map(([, k]) => `<span class="${k <= i ? "fait" : ""}"><i></i></span>`).join("");
+    rub.querySelectorAll("button").forEach(b => { const on = b.dataset.cat === cat; b.setAttribute("aria-current", on); if (on) b.scrollIntoView({ inline: "center", block: "nearest" }); });
+    index.querySelectorAll("[data-go]").forEach(b => b.setAttribute("aria-current", +b.dataset.go === n));
+  }
+  // La story affichée se déduit de la position de défilement (une story = une hauteur d'écran).
+  let attente;
+  function detecter() {
+    const n = Math.round(fil.scrollTop / fil.clientHeight);
+    stories.forEach((s, k) => s.classList.toggle("vue", k === n));
+    if (n !== courant || !stories[n].dataset.vu) { stories[n].dataset.vu = 1; majInterface(n); }
+  }
+  fil.addEventListener("scroll", () => { cancelAnimationFrame(attente); attente = requestAnimationFrame(detecter); }, { passive: true });
+  addEventListener("resize", detecter);
+  courant = -1; detecter();
+
+  // Toucher à droite = suivant, à gauche = précédent (comme les stories)
+  fil.addEventListener("click", e => {
+    if (e.target.closest("a, button")) return;
+    const r = fil.getBoundingClientRect(), x = (e.clientX - r.left) / r.width;
+    if (x > 0.6) aller(courant + 1); else if (x < 0.3) aller(courant - 1);
+  });
+  addEventListener("keydown", e => {
+    if (["ArrowDown", "PageDown", " "].includes(e.key)) { e.preventDefault(); aller(courant + 1); }
+    if (["ArrowUp", "PageUp"].includes(e.key)) { e.preventDefault(); aller(courant - 1); }
+  });
+</script>
+</body>
+</html>

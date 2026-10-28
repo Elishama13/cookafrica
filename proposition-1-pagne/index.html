@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F1C50E">
+<title>Cook Africa — La carte</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;800;900&family=Figtree:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --or: #F1C50E;
+    --rouge: #B30807;
+    --braise: #E8550F;
+    --encre: #000;
+    --papier: #FFFDF6;
+    --display: "Unbounded", system-ui, sans-serif;
+    --texte: "Figtree", system-ui, sans-serif;
+    --barre: 68px;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html { scroll-behavior: smooth; scroll-padding-top: 130px; }
+  body { font-family: var(--texte); background: var(--or); color: var(--encre); font-size: 16px; line-height: 1.55; padding-bottom: calc(var(--barre) + env(safe-area-inset-bottom)); -webkit-tap-highlight-color: transparent; }
+  a { color: inherit; }
+  button { font: inherit; color: inherit; }
+  :focus-visible { outline: 3px solid var(--encre); outline-offset: 3px; border-radius: 6px; }
+  .wrap { padding: 0 16px; max-width: 1200px; margin: 0 auto; }
+
+  /* En-tête */
+  .top { position: sticky; top: 0; z-index: 10; background: var(--or); border-bottom: 3px solid var(--encre); }
+  .top .wrap { display: flex; align-items: center; justify-content: space-between; gap: 12px; height: 62px; }
+  .top img { height: 38px; width: auto; display: block; }
+  .top nav { display: none; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; font-weight: 700; font-size: 16px; padding: 14px 22px; border-radius: 999px; border: 3px solid var(--encre); text-decoration: none; cursor: pointer; }
+  .btn-noir { background: var(--encre); color: var(--or); }
+  .btn-noir:hover { background: var(--rouge); border-color: var(--rouge); color: #fff; }
+  .btn-clair { background: transparent; }
+  .btn-clair:hover { background: var(--papier); }
+  .btn svg { width: 18px; height: 18px; }
+
+  /* Hero : le pagne d'abord, le texte ensuite */
+  .pagne { position: relative; height: min(112vw, 62vh, 560px); min-height: 320px; margin: 0 -16px; }
+  .pagne canvas, .pagne .repli { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .pagne .repli svg { width: 100%; height: 100%; }
+  .hero-texte { padding: 4px 0 40px; }
+  .hero h1 { font: 900 clamp(32px, 9vw, 72px)/1.04 var(--display); letter-spacing: -0.02em; color: var(--rouge); }
+  .hero p { margin: 16px 0 24px; font-size: 17px; max-width: 34em; }
+  .hero .actions { display: grid; gap: 10px; }
+  .ouvert { display: inline-flex; gap: 10px; align-items: center; margin-top: 20px; font-weight: 500; }
+  .ouvert i { width: 10px; height: 10px; border-radius: 50%; background: var(--rouge); }
+  .ouvert.oui i { background: #1F8A3B; box-shadow: 0 0 0 4px rgba(31,138,59,.2); }
+
+  /* Carte : le carnet de recettes */
+  .carte { background: var(--encre); color: var(--papier); border-top: 3px solid var(--encre); padding: 40px 0 48px; }
+  .carte h2, .infos h2 { font: 800 clamp(28px, 7vw, 48px)/1.1 var(--display); letter-spacing: -0.01em; }
+  .carte h2 { color: var(--or); }
+  .carte .intro { margin: 8px 0 20px; max-width: 30em; }
+  .carte .note { margin-top: 14px; font-size: 14px; color: #bdb6a0; }
+  #carnet { --ck-ui: var(--texte); --ck-bouton: var(--or); --ck-bouton-txt: var(--encre); --ck-bouton2: transparent; --ck-bouton2-txt: var(--or); --ck-bordure: 2px solid var(--or); --ck-hauteur: min(74dvh, 700px); }
+  #carnet .ck-milieu { color: #d8d0b8; }
+
+  /* Infos */
+  .infos { padding: 48px 0; }
+  .infos .grille { display: grid; margin-top: 24px; border: 3px solid var(--encre); border-radius: 22px; overflow: hidden; background: var(--papier); }
+  .infos .bloc { padding: 24px; }
+  .infos .bloc + .bloc { border-top: 3px solid var(--encre); }
+  .infos h3 { font: 800 18px var(--display); margin-bottom: 12px; }
+  .infos dl { display: grid; grid-template-columns: auto auto; justify-content: start; gap: 6px 20px; }
+  .infos dd { font-weight: 700; }
+  .infos .tel { display: block; font: 800 24px var(--display); color: var(--rouge); text-decoration: none; margin: 4px 0 10px; }
+  footer { border-top: 3px solid var(--encre); padding: 22px 0; font-size: 14px; }
+  footer .wrap { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+
+  /* Barre d'actions mobile */
+  .barre { position: fixed; z-index: 20; left: 0; right: 0; bottom: 0; height: calc(var(--barre) + env(safe-area-inset-bottom)); padding: 8px 12px calc(8px + env(safe-area-inset-bottom)); display: grid; grid-template-columns: 1fr 1.3fr 1fr; gap: 8px; background: var(--encre); color: var(--or); }
+  .barre a { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; border-radius: 14px; text-decoration: none; font-size: 13px; font-weight: 700; }
+  .barre a.principal { background: var(--or); color: var(--encre); flex-direction: row; gap: 8px; font-size: 15px; }
+  .barre svg { width: 20px; height: 20px; }
+
+  @media (min-width: 720px) {
+    .wrap { padding: 0 32px; }
+    .pagne { margin: 0 -32px; }
+    .hero .actions { display: flex; flex-wrap: wrap; }
+    .infos .grille { grid-template-columns: repeat(3, 1fr); }
+    .infos .bloc + .bloc { border-top: 0; border-left: 3px solid var(--encre); }
+  }
+  @media (min-width: 1024px) {
+    body { padding-bottom: 0; font-size: 17px; }
+    .barre { display: none; }
+    html { scroll-padding-top: 150px; }
+    .top .wrap { height: 76px; }
+    .top img { height: 52px; }
+    .top nav { display: flex; gap: 28px; align-items: center; font-weight: 700; }
+    .top nav a.lien { text-decoration: none; }
+    .top nav a.lien:hover { text-decoration: underline; text-underline-offset: 5px; text-decoration-thickness: 2px; }
+    .hero { display: grid; grid-template-columns: 1fr 1.05fr; align-items: center; gap: 24px; min-height: calc(100vh - 76px); }
+    .hero-texte { order: -1; padding: 40px 0; }
+    .pagne { margin: 0; height: min(78vh, 680px); }
+    .carte { padding: 72px 0 88px; }
+    .carte .wrap { display: grid; grid-template-columns: 1fr minmax(480px, 600px); gap: 56px; align-items: center; }
+    #carnet { --ck-hauteur: min(80vh, 760px); }
+  }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <a href="#"><img src="assets/logo.jpg" alt="Cook Africa, l'univers des mets africains"></a>
+    <nav aria-label="Navigation principale">
+      <a class="lien" href="#carte">La carte</a>
+      <a class="lien" href="#infos">Horaires et adresse</a>
+      <a class="btn btn-noir" href="tel:+2250151459134">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h4l2 5-2.5 1.5a11 11 0 0 0 6 6L16 13l5 2v4a2 2 0 0 1-2 2A17 17 0 0 1 3 5a2 2 0 0 1 2-2"/></svg>
+        Appeler
+      </a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="wrap hero">
+    <div class="pagne" id="pagne" aria-hidden="true"></div>
+    <div class="hero-texte">
+      <h1>Les mets de Côte d'Ivoire, cuisinés comme au village.</h1>
+      <p>Sauce graine au tikriti, kedjenou en canari, attiéké poisson braisé. Une cuisine de tout le pays, servie aux 2 Plateaux.</p>
+      <div class="actions">
+        <a class="btn btn-noir" href="#carte">Voir la carte</a>
+        <a class="btn btn-clair" href="tel:+2250151459134">Réserver une table</a>
+      </div>
+      <div class="ouvert" id="ouvert"><i></i><span></span></div>
+    </div>
+  </section>
+
+  <section class="carte" id="carte">
+    <div class="wrap">
+      <div>
+        <h2>La carte</h2>
+        <p class="intro">Feuilletez le cahier de recettes de la maison : une page par plat, d'où il vient et comment on le mange. Glissez du doigt pour tourner les pages.</p>
+        <p class="note">Prix en francs CFA. Les plats peuvent varier selon le marché du jour.</p>
+      </div>
+      <div id="carnet" aria-label="Carnet de recettes"></div>
+    </div>
+  </section>
+
+  <section class="wrap infos" id="infos">
+    <h2>Venir manger chez nous</h2>
+    <div class="grille">
+      <div class="bloc"><h3>Horaires</h3><dl id="horaires"></dl></div>
+      <div class="bloc"><h3>Adresse</h3><p id="adresse"></p></div>
+      <div class="bloc">
+        <h3>Réserver ou commander</h3>
+        <a class="tel" href="tel:+2250151459134">01 51 45 91 34</a>
+        <a href="mailto:cook@cookafricavip.com">cook@cookafricavip.com</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap"><span>Cook Africa, l'univers des mets africains</span><span>Abidjan, Côte d'Ivoire</span></div>
+</footer>
+
+<nav class="barre" aria-label="Actions rapides">
+  <a href="#carte"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>La carte</a>
+  <a class="principal" href="tel:+2250151459134"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h4l2 5-2.5 1.5a11 11 0 0 0 6 6L16 13l5 2v4a2 2 0 0 1-2 2A17 17 0 0 1 3 5a2 2 0 0 1 2-2"/></svg>Appeler</a>
+  <a id="itineraire" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s7-6.2 7-12a7 7 0 0 0-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>Y aller</a>
+</nav>
+
+<script src="assets/menu.js"></script>
+<script src="assets/recits.js"></script>
+<script src="assets/assiette.js"></script>
+<script src="assets/composants/carnet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+  const D = window.COOKAFRICA;
+  const C = { or: "#F1C50E", rouge: "#B30807", braise: "#E8550F", encre: "#000", papier: "#FFFDF6" };
+  const REDUIT = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // ——— Motif wax génératif (SVG), utilisé comme texture du pagne ———
+  function motifWax(N, taille) {
+    let seed = 7;
+    const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+    const pick = a => a[Math.floor(rnd() * a.length)];
+    const T = taille / N, PAL = [C.or, C.rouge, C.encre, C.braise, C.papier];
+    let out = "";
+    for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+      const X = x * T, Y = y * T, cx = X + T / 2, cy = Y + T / 2;
+      const fond = pick(PAL), pal = PAL.filter(c => c !== fond), type = pick(["cible", "quart", "demi", "pois", "cible"]);
+      let g = `<rect x="${X}" y="${Y}" width="${T}" height="${T}" fill="${fond}"/>`;
+      if (type === "cible") [0.46, 0.34, 0.22, 0.1].forEach((r, i) => g += `<circle cx="${cx}" cy="${cy}" r="${T * r}" fill="${i % 2 ? fond : pal[i % pal.length]}"/>`);
+      else if (type === "quart") { const k = pick([[X, Y], [X + T, Y], [X, Y + T], [X + T, Y + T]]); [1, 0.7, 0.4].forEach((r, i) => g += `<circle cx="${k[0]}" cy="${k[1]}" r="${T * r}" fill="${i % 2 ? fond : pal[(i + 1) % pal.length]}"/>`); }
+      else if (type === "demi") g += `<path d="M${X} ${Y + T} A${T / 2} ${T / 2} 0 0 1 ${X + T} ${Y + T}Z" fill="${pal[0]}"/><path d="M${X + T * .2} ${Y + T} A${T * .3} ${T * .3} 0 0 1 ${X + T * .8} ${Y + T}Z" fill="${pal[2]}"/>`;
+      else for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) g += `<circle cx="${X + T * (i + .5) / 3}" cy="${Y + T * (j + .5) / 3}" r="${T * .1}" fill="${pal[1]}"/>`;
+      out += `<clipPath id="c${x}_${y}"><rect x="${X}" y="${Y}" width="${T}" height="${T}"/></clipPath><g clip-path="url(#c${x}_${y})">${g}</g>`;
+    }
+    // Lisière du pagne : bande noire et frise de triangles rouges
+    out += `<rect x="0" y="${taille - T * .32}" width="${taille}" height="${T * .32}" fill="${C.encre}"/>`;
+    for (let i = 0; i < N * 4; i++) out += `<path d="M${i * T / 4} ${taille - T * .32} l${T / 8} ${T * .16} l${T / 8} ${-T * .16}z" fill="${C.rouge}"/>`;
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${taille} ${taille}" width="${taille}" height="${taille}">${out}</svg>`;
+  }
+
+  const hote = document.getElementById("pagne");
+  const webgl = (() => { try { const c = document.createElement("canvas"); return !!(window.THREE && (c.getContext("webgl2") || c.getContext("webgl"))); } catch { return false; } })();
+  if (webgl) pagne3D(); else hote.innerHTML = `<div class="repli">${motifWax(5, 600)}</div>`;
+
+  // ——— Le pagne suspendu à sa corde, qui ondule au vent ———
+  function pagne3D() {
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    renderer.outputEncoding = THREE.sRGBEncoding;
+    hote.appendChild(renderer.domElement);
+    const sc = new THREE.Scene();
+    const cam = new THREE.PerspectiveCamera(30, 1, 0.1, 50);
+    sc.add(new THREE.AmbientLight(0xffffff, 0.55));
+    const soleil = new THREE.DirectionalLight(0xfff3d6, 0.9); soleil.position.set(2.5, 3, 5); sc.add(soleil);
+    const contre = new THREE.DirectionalLight(0xffb070, 0.35); contre.position.set(-3, -1, 2); sc.add(contre);
+
+    const W = 3.2, H = 3.4, SX = 56, SY = 60;
+    const geo = new THREE.PlaneGeometry(W, H, SX, SY);
+    const pos = geo.attributes.position, base = Float32Array.from(pos.array);
+    // Le SVG est rasterisé dans un canvas 1024² (puissance de 2 : mipmaps nets en WebGL1).
+    const toile = document.createElement("canvas"); toile.width = toile.height = 1024;
+    const tex = new THREE.CanvasTexture(toile);
+    tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+    tex.encoding = THREE.sRGBEncoding;
+    const img = new Image();
+    img.onload = () => { toile.getContext("2d").drawImage(img, 0, 0, 1024, 1024); tex.needsUpdate = true; dessiner(); };
+    img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(motifWax(6, 1024));
+    const tissu = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ map: tex, side: THREE.DoubleSide, roughness: .85, metalness: 0 }));
+    sc.add(tissu);
+
+    // Corde et pinces à linge
+    const corde = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 9, 8), new THREE.MeshStandardMaterial({ color: 0x3b2410, roughness: 1 }));
+    corde.rotation.z = Math.PI / 2; corde.position.set(0, H / 2 + 0.02, 0); sc.add(corde);
+    const bois = new THREE.MeshStandardMaterial({ color: 0x8a5a2b, roughness: .8 });
+    [-W * .42, 0, W * .42].forEach(x => { const p = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.24, 0.07), bois); p.position.set(x, H / 2 - 0.04, 0.03); sc.add(p); });
+
+    // Vent : rafale au toucher, sinon une brise régulière
+    const vent = { x: 0, y: 0, force: 0 };
+    hote.addEventListener("pointermove", e => {
+      const r = hote.getBoundingClientRect();
+      vent.x = ((e.clientX - r.left) / r.width - .5) * W; vent.y = (.5 - (e.clientY - r.top) / r.height) * H;
+      vent.force = Math.min(vent.force + 0.25, 1);
+    }, { passive: true });
+    hote.addEventListener("pointerdown", () => vent.force = 1.4);
+
+    function onduler(t) {
+      for (let i = 0; i < pos.count; i++) {
+        const x = base[i * 3], y = base[i * 3 + 1];
+        const libre = (H / 2 - y) / H;          // 0 en haut (pincé), 1 en bas
+        const dx = x - vent.x, dy = y - vent.y, pres = Math.exp(-(dx * dx + dy * dy) * 1.4);
+        const z = libre * (Math.sin(x * 1.7 + t * 1.5) * .22 + Math.sin(y * 2.3 - t * 1.1 + x * .8) * .11 + Math.sin(x * 4 + t * 2.6) * .025)
+                + pres * vent.force * .22 * Math.sin(t * 6 + dx * 3) * libre;
+        pos.setXYZ(i, x + libre * Math.sin(t * .9 + y) * .04, y + libre * libre * .02 * Math.sin(t * 1.3), z);
+      }
+      pos.needsUpdate = true; geo.computeVertexNormals();
+    }
+
+    function taille() {
+      const w = hote.clientWidth, h = hote.clientHeight;
+      renderer.setSize(w, h, false); cam.aspect = w / h;
+      // Cadre le pagne en entier, quelle que soit l'orientation de l'écran.
+      const vfov = cam.fov * Math.PI / 360, besoinH = (H + .5) / 2, besoinW = (W + .6) / 2 / cam.aspect;
+      cam.position.set(0, -0.05, Math.max(besoinH, besoinW) / Math.tan(vfov));
+      cam.lookAt(0, 0, 0); cam.updateProjectionMatrix();
+      dessiner();
+    }
+
+    let actif = true, enCours = false;
+    const t0 = performance.now();
+    function dessiner() { if (!enCours) { enCours = true; requestAnimationFrame(boucle); } }
+    function boucle(now) {
+      enCours = false;
+      const t = REDUIT ? 1.2 : (now - t0) / 1000;
+      vent.force *= 0.97;
+      onduler(t);
+      // Entrée : le pagne se déroule depuis la corde.
+      const intro = REDUIT ? 1 : Math.min((now - t0) / 1100, 1), e = 1 - Math.pow(1 - intro, 3);
+      tissu.scale.y = 0.02 + 0.98 * e; tissu.position.y = (H / 2) * (1 - tissu.scale.y);
+      renderer.render(sc, cam);
+      if (!REDUIT && actif) dessiner();
+    }
+    new IntersectionObserver(([e]) => { actif = e.isIntersecting; if (actif) dessiner(); }).observe(hote);
+    new ResizeObserver(taille).observe(hote); taille();
+  }
+
+  // ——— Ouvert maintenant ? ———
+  const now = new Date(), h = now.getHours() + now.getMinutes() / 60, ferme = now.getDay() === 0 ? 20 : 22;
+  const ouvert = h >= 12 && h < ferme, el = document.getElementById("ouvert");
+  el.classList.toggle("oui", ouvert);
+  el.querySelector("span").textContent = ouvert ? `Ouvert maintenant, jusqu'à ${ferme}h` : "Fermé pour le moment, ouverture à 12h";
+
+  // ——— Carte : le carnet de recettes ———
+  CookCarnet.monter(document.getElementById("carnet"), { plats: D.plats, categories: D.categories, recits: window.RECITS, logo: "assets/logo.jpg", telHref: D.infos.telHref, tel: D.infos.tel });
+
+  document.getElementById("horaires").innerHTML = D.infos.horaires.map(x => `<dt>${x.jours}</dt><dd>${x.heures}</dd>`).join("");
+  document.getElementById("adresse").textContent = D.infos.adresse;
+  document.getElementById("itineraire").href = D.infos.itineraire;
+</script>
+</body>
+</html>
