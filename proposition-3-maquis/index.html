@@ -24,7 +24,7 @@
   }
   * { box-sizing: border-box; margin: 0; }
   html { scroll-behavior: smooth; }
-  body { font-family: var(--texte); background: var(--cacao); color: var(--creme); font-size: 16px; line-height: 1.55; padding-bottom: calc(var(--barre) + env(safe-area-inset-bottom)); -webkit-tap-highlight-color: transparent; }
+  body { font-family: var(--texte); background: var(--cacao); color: var(--creme); font-size: 1rem; line-height: 1.55; padding-bottom: calc(var(--barre) + env(safe-area-inset-bottom)); -webkit-tap-highlight-color: transparent; }
   a { color: inherit; }
   button { font: inherit; color: inherit; }
   :focus-visible { outline: 3px solid var(--or); outline-offset: 3px; border-radius: 6px; }
@@ -35,12 +35,21 @@
   header img { display: block; height: 38px; width: auto; border-radius: 9px; }
   header nav { display: none; }
   .btn { display: inline-block; text-decoration: none; font-weight: 600; padding: 12px 22px; border-radius: 12px; background: var(--braise); color: var(--cacao); }
-  .btn:hover { background: var(--or); }
+  /* Retour immédiat à l'appui ; le survol seulement là où il existe vraiment */
+  .btn, .barre a { transition: scale .12s ease-out, background-color .15s, color .15s; }
+  .btn:active, .barre a:active { scale: .96; }
+  .barre a:not(.principal):active { background: rgba(240,100,30,.18); color: var(--creme); }
+  @media (hover: hover) {
+    .btn:hover { background: var(--or); }
+    header nav a.lien:hover { color: var(--creme); }
+  }
 
   /* Hero : les braises derrière, le composeur devant */
   .compose { position: relative; padding: 8px 0 48px; overflow: hidden; margin-top: -64px; padding-top: 72px; }
   .compose::before { content: ""; position: absolute; inset: 0; background: radial-gradient(90% 45% at 50% 100%, rgba(240,100,30,.32), transparent 70%); pointer-events: none; }
-  #braises { position: absolute; inset: 0; width: 100%; height: 100%; display: block; pointer-events: none; }
+  /* Les braises s'éteignent vers le haut : le titre reste lisible */
+  #braises { position: absolute; inset: 0; width: 100%; height: 100%; display: block; pointer-events: none;
+    -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,.3), #000 60%); mask-image: linear-gradient(to bottom, rgba(0,0,0,.3), #000 60%); }
   .compose .wrap { position: relative; }
   h1 { font: 900 clamp(50px, 15vw, 120px)/.88 var(--titre); text-transform: uppercase; }
   h1 span { display: block; color: var(--or); }
@@ -66,18 +75,18 @@
     .infos .boite { grid-template-columns: 1.2fr 1fr 1fr; padding: 40px; }
   }
   @media (min-width: 1024px) {
-    body { padding-bottom: 0; font-size: 17px; }
+    body { padding-bottom: 0; font-size: 1.0625rem; }
     .barre { display: none; }
     header .wrap { height: 80px; }
     header img { height: 50px; }
     header nav { display: flex; gap: 24px; align-items: center; }
     header nav a.lien { text-decoration: none; color: var(--sable); }
-    header nav a.lien:hover { color: var(--creme); }
     .compose { margin-top: -80px; padding: 96px 0 64px; }
     h1 { font-size: clamp(64px, 6.2vw, 92px); }
     h1 span { display: inline; }
   }
-  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; } }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .btn:active, .barre a:active { scale: none; opacity: .85; } }
+  @media (prefers-reduced-transparency: reduce) { .barre { background: var(--cacao); backdrop-filter: none; } }
 </style>
 </head>
 <body>
@@ -168,7 +177,7 @@
         void main() {
           vV = vie; vT = teinte;
           gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-          gl_PointSize = taille * dpr * (0.6 + 0.4 * sin(t * 9.0 + teinte * 40.0)) * (0.4 + vie);
+          gl_PointSize = taille * dpr * (0.7 + 0.3 * sin(t * 5.0 + teinte * 40.0)) * (0.4 + vie);
         }`,
       fragmentShader: `
         varying float vV; varying float vT;
@@ -202,7 +211,7 @@
     function boucle(now) {
       enCours = false;
       const dt = Math.min((now - avant) / 16.7, 3); avant = now;
-      souffle.f *= .96;
+      souffle.f *= Math.pow(.96, dt);
       for (let i = 0; i < N; i++) {
         const k = i * 3, dx = p[k] - souffle.x, dy = p[k + 1] - souffle.y, d2 = dx * dx + dy * dy;
         if (souffle.f > .01 && d2 < .12) { v[k] += dx * .004 * souffle.f; v[k + 1] += .003 * souffle.f; vie[i] = Math.min(vie[i] + .02, 1); }

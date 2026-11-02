@@ -22,7 +22,7 @@
   }
   * { box-sizing: border-box; margin: 0; }
   html { scroll-behavior: smooth; }
-  body { font-family: var(--sans); background: var(--rouge); color: var(--lait); font-size: 16px; line-height: 1.55; padding-bottom: calc(var(--barre) + env(safe-area-inset-bottom)); -webkit-tap-highlight-color: transparent; }
+  body { font-family: var(--sans); background: var(--rouge); color: var(--lait); font-size: 1rem; line-height: 1.55; padding-bottom: calc(var(--barre) + env(safe-area-inset-bottom)); -webkit-tap-highlight-color: transparent; }
   a { color: inherit; }
   button { font: inherit; color: inherit; }
   :focus-visible { outline: 3px solid var(--or); outline-offset: 3px; border-radius: 8px; }
@@ -34,7 +34,15 @@
   .logo img { display: block; height: 34px; width: auto; border-radius: 8px; }
   header nav { display: none; }
   .btn { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; font-weight: 600; padding: 12px 20px; border-radius: 999px; background: var(--or); color: var(--rouge-fonce); border: 0; cursor: pointer; }
-  .btn:hover { background: var(--lait); }
+  /* Retour immédiat à l'appui ; le survol seulement là où il existe vraiment */
+  .btn, .barre a, .tout { transition: scale .12s ease-out, background-color .15s, color .15s; }
+  .btn:active, .barre a:active, .etiquette:active { scale: .96; }
+  .barre a:not(.principal):active { background: rgba(241,197,14,.18); }
+  .tout:active { color: var(--or); }
+  @media (hover: hover) {
+    .btn:hover { background: var(--lait); }
+    header nav a.lien:hover { color: var(--or); }
+  }
 
   h1 { font: 400 clamp(32px, 8.6vw, 72px)/1.04 var(--serif); color: var(--or); letter-spacing: -0.015em; margin-top: 8px; }
   .chapo { margin-top: 12px; color: var(--or-pale); max-width: 30em; }
@@ -43,7 +51,7 @@
   .scene { position: relative; width: 100%; aspect-ratio: 1 / 1.02; max-height: 74vh; margin: 8px auto 0; touch-action: pan-y; }
   .scene canvas, .scene svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
   .etiquettes { position: absolute; inset: 0; pointer-events: none; }
-  .etiquette { position: absolute; left: 0; top: 0; pointer-events: auto; display: inline-flex; align-items: center; gap: 6px; padding: 6px 11px 6px 8px; border-radius: 999px; border: 0; background: rgba(110,7,3,.82); color: var(--lait); font-weight: 500; font-size: 14px; white-space: nowrap; cursor: pointer; backdrop-filter: blur(4px); box-shadow: 0 2px 10px rgba(0,0,0,.25); transition: background .2s, color .2s; will-change: transform; }
+  .etiquette { position: absolute; left: 0; top: 0; pointer-events: auto; display: inline-flex; align-items: center; gap: 6px; padding: 6px 11px 6px 8px; border-radius: 999px; border: 0; background: rgba(110,7,3,.82); color: var(--lait); font-weight: 500; font-size: 14px; white-space: nowrap; cursor: pointer; backdrop-filter: blur(4px); box-shadow: 0 2px 10px rgba(0,0,0,.25); transition: background .2s, color .2s, scale .12s ease-out; will-change: transform; }
   .etiquette::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--or); }
   .etiquette.gauche { flex-direction: row-reverse; padding: 6px 8px 6px 11px; }
   .etiquette[aria-pressed="true"] { background: var(--or); color: var(--rouge-fonce); font-weight: 600; }
@@ -71,7 +79,7 @@
   footer { padding: 20px 0 28px; font-size: 13px; color: var(--or-pale); }
 
   /* Barre d'actions mobile */
-  .barre { position: fixed; z-index: 20; left: 0; right: 0; bottom: 0; height: calc(var(--barre) + env(safe-area-inset-bottom)); padding: 8px 12px calc(8px + env(safe-area-inset-bottom)); display: grid; grid-template-columns: 1fr 1.3fr 1fr; gap: 8px; background: rgba(110,7,3,.94); backdrop-filter: blur(10px); border-top: 1px solid rgba(241,197,14,.35); }
+  .barre { position: fixed; z-index: 20; left: 0; right: 0; bottom: 0; height: calc(var(--barre) + env(safe-area-inset-bottom)); padding: 8px 12px calc(8px + env(safe-area-inset-bottom)); display: grid; grid-template-columns: 1fr 1.3fr 1fr; gap: 8px; background: rgba(110,7,3,.78); backdrop-filter: blur(18px) saturate(160%); -webkit-backdrop-filter: blur(18px) saturate(160%); border-top: 1px solid rgba(241,197,14,.35); }
   .barre a { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; border-radius: 14px; text-decoration: none; font-size: 13px; font-weight: 500; }
   .barre a.principal { background: var(--or); color: var(--rouge-fonce); font-weight: 600; flex-direction: row; gap: 8px; font-size: 15px; }
   .barre svg { width: 20px; height: 20px; }
@@ -82,13 +90,12 @@
     .infos .wrap { grid-template-columns: 1.2fr 1fr 1fr; }
   }
   @media (min-width: 1024px) {
-    body { padding-bottom: 0; font-size: 17px; }
+    body { padding-bottom: 0; font-size: 1.0625rem; }
     .barre { display: none; }
     header .wrap { height: 88px; }
     .logo img { height: 46px; }
     header nav { display: flex; align-items: center; gap: 28px; }
     header nav a.lien { text-decoration: none; }
-    header nav a.lien:hover { color: var(--or); }
     .pays { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 48px; align-items: start; max-width: 1280px; margin: 0 auto; padding: 0 32px 72px; }
     .pays > .wrap { padding: 0; position: sticky; top: 16px; }
     h1 { font-size: clamp(40px, 3.8vw, 56px); }
@@ -96,7 +103,9 @@
     .panneau { margin: 0; padding: 8px 0 0; }
     #stories { --ck-hauteur: min(84vh, 780px); max-width: 440px; }
   }
-  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; animation: none !important; } }
+  /* Mouvement réduit : on garde les changements de couleur, on retire les déplacements */
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .btn:active, .barre a:active, .etiquette:active { scale: none; opacity: .85; } }
+  @media (prefers-reduced-transparency: reduce) { .barre { background: var(--rouge-fonce); backdrop-filter: none; -webkit-backdrop-filter: none; } .etiquette { background: var(--rouge-fonce); backdrop-filter: none; } }
 </style>
 </head>
 <body>
@@ -200,10 +209,27 @@
     stories.afficher(D.plats.filter(p => !zone || p.region === zone),
       z ? z.nom : "Toute la carte",
       z ? `${z.peuple} ${z.texte}` : "Les plats de tout le pays, des entrées aux boissons maison.");
-    // Sur téléphone, on amène les stories sous les yeux après le choix d'une région.
-    if (!premierRendu && zone && innerWidth < 1024) document.getElementById("panneau").scrollIntoView({ behavior: REDUIT ? "auto" : "smooth", block: "start" });
+    mesurer();
+    if (!premierRendu && zone && innerWidth < 1024) amenerPanneau();
     premierRendu = false;
   }
+
+  // Sur téléphone, on amène les stories sous les yeux après le choix d'une région, mais seulement
+  // après avoir laissé voir la région se soulever, si elles sont hors écran, et pas si la personne défile déjà.
+  function amenerPanneau() {
+    const p = document.getElementById("panneau");
+    if (p.getBoundingClientRect().top < innerHeight * .7) return;
+    let annule = false; const stop = () => annule = true, ev = ["wheel", "touchstart", "keydown"];
+    ev.forEach(t => addEventListener(t, stop, { passive: true }));
+    setTimeout(() => { ev.forEach(t => removeEventListener(t, stop)); if (!annule) p.scrollIntoView({ behavior: REDUIT ? "auto" : "smooth", block: "start" }); }, REDUIT ? 0 : 450);
+  }
+
+  // Taille des étiquettes mise en cache : la boucle 3D ne relit plus la mise en page à chaque image.
+  function mesurer() {
+    Object.values(ZONES).forEach(z => { z.bw = z.el.offsetWidth; z.bh = z.el.offsetHeight; });
+    resto.bw = resto.offsetWidth;
+  }
+  document.fonts?.ready.then(mesurer);
 
   // ——— Carte 3D (Three.js), avec repli SVG ———
   const scene = document.getElementById("scene");
@@ -269,7 +295,7 @@
 
     function taille() {
       const w = scene.clientWidth, h = scene.clientHeight;
-      renderer.setSize(w, h, false); cam.aspect = w / h;
+      renderer.setSize(w, h, false); cam.aspect = w / h; mesurer();
       // Recule la caméra sur écran étroit pour que tout le pays tienne.
       const d = Math.max(10.8, 10 / (w / h));
       cam.position.set(0, -d * 0.58, d); cam.lookAt(0, 0.25, 0);
@@ -282,22 +308,26 @@
     new IntersectionObserver(([e]) => { actif = e.isIntersecting; if (actif) lancer(); }).observe(scene);
 
     const v = new THREE.Vector3(), t0 = performance.now();
+    let avant = t0;
     function boucle(now) {
       enCours = false;
       if (!actif) return;
       const t = (now - t0) / 1000;
+      // Lissages indépendants de la fréquence de l'écran (60 ou 120 Hz).
+      const dt = Math.min((now - avant) / 16.7, 4); avant = now;
+      const kz = 1 - Math.pow(.86, dt), kc = 1 - Math.pow(.85, dt), kt = 1 - Math.pow(.95, dt);
       blocs.forEach(g => {
         const u = g.userData, on = u.zone === zone, hov = u.zone === survol;
-        if (now - t0 > u.delai || REDUIT) u.z += ((on ? 0.34 : hov ? 0.08 : 0) - u.z) * (REDUIT ? 1 : 0.14);
+        if (now - t0 > u.delai || REDUIT) u.z += ((on ? 0.34 : hov ? 0.08 : 0) - u.z) * (REDUIT ? 1 : kz);
         g.position.z = u.z;
         g.children.forEach(m => { if (m.isMesh) {
-          m.material[0].color.lerp(on ? C.hautOn : hov ? C.survol : C.haut, 0.15);
-          m.material[1].color.lerp(on ? C.coteOn : C.cote, 0.15);
+          m.material[0].color.lerp(on ? C.hautOn : hov ? C.survol : C.haut, kc);
+          m.material[1].color.lerp(on ? C.coteOn : C.cote, kc);
         }});
       });
       if (!REDUIT) {
-        pays.rotation.x += (incl.y * 0.12 - pays.rotation.x) * 0.05;
-        pays.rotation.y += (incl.x * 0.18 - pays.rotation.y) * 0.05;
+        pays.rotation.x += (incl.y * 0.12 - pays.rotation.x) * kt;
+        pays.rotation.y += (incl.x * 0.18 - pays.rotation.y) * kt;
         pin.position.z = EP + 0.06 + Math.abs(Math.sin(t * 2.2)) * 0.12 + (zone === "abidjan" ? 0.34 : 0);
       } else pin.position.z = EP + (zone === "abidjan" ? 0.34 : 0);
       renderer.render(sc, cam);
@@ -305,11 +335,11 @@
       const w = scene.clientWidth, h = scene.clientHeight;
       Object.entries(ZONES).forEach(([id, z]) => {
         v.set(z.ancre[0] * S, -z.ancre[1] * S, EP + (id === zone ? 0.34 : 0)).applyMatrix4(pays.matrixWorld).project(cam);
-        const x = (v.x + 1) / 2 * w, y = (1 - v.y) / 2 * h, bw = z.el.offsetWidth, bh = z.el.offsetHeight;
+        const x = (v.x + 1) / 2 * w, y = (1 - v.y) / 2 * h, bw = z.bw, bh = z.bh;
         z.el.style.transform = `translate(${Math.round(z.gauche ? x - bw + 8 : x - 8)}px, ${Math.round(y - bh / 2)}px)`;
       });
       v.set(pin.position.x, pin.position.y, pin.position.z + 0.5).applyMatrix4(pays.matrixWorld).project(cam);
-      resto.style.transform = `translate(${Math.round((v.x + 1) / 2 * w - resto.offsetWidth - 8)}px, ${Math.round((1 - v.y) / 2 * h - 6)}px)`;
+      resto.style.transform = `translate(${Math.round((v.x + 1) / 2 * w - resto.bw - 8)}px, ${Math.round((1 - v.y) / 2 * h - 6)}px)`;
       if (!REDUIT || now - t0 < 100) lancer();
     }
     lancer();

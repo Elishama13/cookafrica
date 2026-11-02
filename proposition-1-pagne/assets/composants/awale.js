@@ -7,7 +7,8 @@
   .ck-plateau { position: relative; height: min(118vw, 64dvh); min-height: 420px; margin: 0 -16px; touch-action: pan-y; }
   .ck-plateau canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
   .ck-trous { position: absolute; inset: 0; pointer-events: none; }
-  .ck-trou { position: absolute; left: 0; top: 0; pointer-events: auto; display: grid; justify-items: end; padding: 6px 10px; border: 0; border-radius: 12px; background: var(--ck-fond-etiquette, rgba(36,18,11,.72)); color: inherit; cursor: pointer; text-align: right; backdrop-filter: blur(4px); will-change: transform; transition: background .2s, color .2s; }
+  .ck-trou { position: absolute; left: 0; top: 0; pointer-events: auto; display: grid; justify-items: end; padding: 6px 10px; border: 0; border-radius: 12px; background: var(--ck-fond-etiquette, rgba(36,18,11,.72)); color: inherit; cursor: pointer; text-align: right; backdrop-filter: blur(4px); will-change: transform; transition: background .2s, color .2s, scale .12s ease-out; }
+  .ck-trou:active { scale: .95; }
   .ck-trou b { font: 700 19px/1 var(--ck-titre, system-ui); text-transform: uppercase; }
   .ck-trou small { font-size: 12px; color: var(--ck-sable, #D9BFA0); }
   .ck-trou[aria-pressed="true"] { background: var(--ck-or, #F1C50E); color: #24120B; }
@@ -19,8 +20,8 @@
   .ck-recolte h3 { font: 700 30px/1.05 var(--ck-titre, system-ui); text-transform: uppercase; color: var(--ck-or, #F1C50E); }
   .ck-vide { color: var(--ck-sable, #D9BFA0); margin-top: 6px; }
   .ck-graines { list-style: none; padding: 0; margin-top: 12px; display: grid; gap: 10px; }
-  .ck-graines li { display: grid; grid-template-columns: auto 1fr auto; gap: 2px 12px; align-items: start; padding: 14px; border-radius: 16px; background: var(--ck-carte, #34190F); border: 1px solid var(--ck-bord, #4A2416); animation: ck-pousse .45s cubic-bezier(.2,.9,.25,1.3) backwards; }
-  @keyframes ck-pousse { from { opacity: 0; transform: translateY(-14px) scale(.96); } }
+  .ck-graines li { display: grid; grid-template-columns: auto 1fr auto; gap: 2px 12px; align-items: start; padding: 14px; border-radius: 16px; background: var(--ck-carte, #34190F); border: 1px solid var(--ck-bord, #4A2416); animation: ck-pousse .38s cubic-bezier(.2,.8,.2,1) backwards; }
+  @keyframes ck-pousse { from { opacity: 0; transform: translateY(-8px); } }
   .ck-grain { width: 14px; height: 11px; margin-top: 6px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #B8B5A2, #6E6C5C); }
   .ck-grain.ck-or { background: radial-gradient(circle at 35% 35%, #FFE27A, #C99A06); }
   .ck-graines strong { font-weight: 600; font-size: 17px; }
@@ -34,7 +35,8 @@
     .ck-recolte { padding-top: 40px; max-height: calc(100vh - 40px); overflow: auto; position: sticky; top: 20px; }
     .ck-graines { grid-template-columns: 1fr; }
   }
-  @media (prefers-reduced-motion: reduce) { .ck-graines li { animation: none; } }`;
+  @media (prefers-reduced-motion: reduce) { .ck-graines li { animation: ck-apparait .2s ease-out backwards; } .ck-trou:active { scale: none; opacity: .85; } }
+  @keyframes ck-apparait { from { opacity: 0; } }`;
 
   function monter(hote, o) {
     if (!document.getElementById("ck-awale-css")) { const st = document.createElement("style"); st.id = "ck-awale-css"; st.textContent = CSS; document.head.appendChild(st); }
@@ -61,10 +63,18 @@
       recolte.querySelector("h3").textContent = t.id === "signatures" ? "Les signatures de la maison" : t.nom;
       recolte.querySelector(".ck-vide").hidden = true; liste.innerHTML = "";
     }
-    function pousser(p) {
-      liste.insertAdjacentHTML("beforeend", `<li><span class="ck-grain ${p.signature ? "ck-or" : ""}" aria-hidden="true"></span><strong>${p.nom}</strong><span class="ck-prix">${formatPrix(p.prix)}</span><p>${p.desc}${p.accomp ? ` Servi avec ${p.accomp.toLowerCase()}.` : ""}</p></li>`);
+    // La récolte s'affiche tout de suite (léger décalage) : les graines qui volent ne sont qu'un décor.
+    function pousser(p, n = 0) {
+      liste.insertAdjacentHTML("beforeend", `<li style="animation-delay:${Math.min(n, 10) * 35}ms"><span class="ck-grain ${p.signature ? "ck-or" : ""}" aria-hidden="true"></span><strong>${p.nom}</strong><span class="ck-prix">${formatPrix(p.prix)}</span><p>${p.desc}${p.accomp ? ` Servi avec ${p.accomp.toLowerCase()}.` : ""}</p></li>`);
     }
-    let semer = k => { TROUS.forEach((t, j) => t.el.setAttribute("aria-pressed", j === k)); recolter(k); TROUS[k].plats.forEach(pousser); };
+    // Sur téléphone, on amène la récolte sous les yeux, sauf si la personne a déjà repris la main.
+    function amener() {
+      if (innerWidth >= 1024 || recolte.getBoundingClientRect().top < innerHeight * .6) return;
+      let annule = false; const stop = () => annule = true, ev = ["wheel", "touchstart", "keydown"];
+      ev.forEach(t => addEventListener(t, stop, { passive: true }));
+      setTimeout(() => { ev.forEach(t => removeEventListener(t, stop)); if (!annule) recolte.scrollIntoView({ behavior: REDUIT ? "auto" : "smooth", block: "start" }); }, REDUIT ? 0 : 450);
+    }
+    let semer = k => { TROUS.forEach((t, j) => t.el.setAttribute("aria-pressed", j === k)); recolter(k); TROUS[k].plats.forEach(pousser); amener(); };
 
     const webgl = (() => { try { const c = document.createElement("canvas"); return !!(window.THREE && (c.getContext("webgl2") || c.getContext("webgl"))); } catch { return false; } })();
     if (!webgl) { plateau.classList.add("ck-sans3d"); return { semer: k => semer(k) }; }
@@ -135,21 +145,19 @@
     // Semer : les graines sautent une à une dans les trous d'en face
     const vols = [];
     function voler(m, vers, delai, duree, fin) { vols.push({ m, de: m.position.clone(), vers, t0: performance.now() + delai, duree, fin }); lancer(); }
-    let jeton = 0;
     semer = k => {
-      const j = ++jeton;
-      TROUS.forEach((t, i) => t.el.setAttribute("aria-pressed", i === k));
+            TROUS.forEach((t, i) => t.el.setAttribute("aria-pressed", i === k));
       recolter(k); vols.length = 0;
       TROUS.forEach((t, i) => t.graines.forEach(m => { if (i !== k) { if (REDUIT) m.position.copy(m.userData.maison); else voler(m, m.userData.maison, 0, 320); } }));
       const gr = TROUS[k].graines, parTrou = {};
       gr.forEach((m, n) => {
         // Comme à l'awalé : on sème trou après trou chez l'adversaire.
         const cible = 5 - (n % 6); parTrou[cible] = (parTrou[cible] || 0) + 1;
-        const vers = placeDans(cible, "eux", parTrou[cible] - 1, 2), p = TROUS[k].plats[n];
-        if (REDUIT) { m.position.copy(vers); pousser(p); }
-        else voler(m, vers, 260 + n * 240, 480, () => { if (j === jeton) pousser(p); });
+        const vers = placeDans(cible, "eux", parTrou[cible] - 1, 2);
+        pousser(TROUS[k].plats[n], n);
+        if (REDUIT) m.position.copy(vers); else voler(m, vers, 80 + n * 90, 420);
       });
-      if (innerWidth < 1024) setTimeout(() => j === jeton && recolte.scrollIntoView({ behavior: REDUIT ? "auto" : "smooth", block: "start" }), REDUIT ? 0 : 260 + gr.length * 240 + 500);
+      amener();
       lancer();
     };
 
@@ -182,16 +190,19 @@
     let actif = true, enCours = false;
     function lancer() { if (!enCours) { enCours = true; requestAnimationFrame(boucle); } }
     const v = new THREE.Vector3();
+    let avant = performance.now();
     function boucle(now) {
       enCours = false;
+      const dt = Math.min((now - avant) / 16.7, 4); avant = now;
       for (let i = vols.length - 1; i >= 0; i--) {
         const f = vols[i]; if (now < f.t0) continue;
         const t = Math.min((now - f.t0) / f.duree, 1), e = t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
         f.m.position.lerpVectors(f.de, f.vers, e); f.m.position.z += Math.sin(Math.PI * t) * (.9 + f.de.distanceTo(f.vers) * .15);
-        f.m.rotation.x += .15; f.m.rotation.y += .1;
+        f.m.rotation.x += .15 * dt; f.m.rotation.y += .1 * dt;
         if (t >= 1) { vols.splice(i, 1); f.fin && f.fin(); }
       }
-      if (!REDUIT) { jeu.rotation.x += (incl.y * .1 - jeu.rotation.x) * .05; jeu.rotation.y += (incl.x * .12 - jeu.rotation.y) * .05; }
+      // Lissage indépendant de la fréquence de l'écran (60 ou 120 Hz).
+      if (!REDUIT) { const q = 1 - Math.pow(.95, dt); jeu.rotation.x += (incl.y * .1 - jeu.rotation.x) * q; jeu.rotation.y += (incl.x * .12 - jeu.rotation.y) * q; }
       renderer.render(sc, cam);
       const w = plateau.clientWidth, h = plateau.clientHeight;
       TROUS.forEach((t, k) => {

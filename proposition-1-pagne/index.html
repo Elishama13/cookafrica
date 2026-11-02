@@ -21,7 +21,7 @@
   }
   * { box-sizing: border-box; margin: 0; }
   html { scroll-behavior: smooth; scroll-padding-top: 130px; }
-  body { font-family: var(--texte); background: var(--or); color: var(--encre); font-size: 16px; line-height: 1.55; padding-bottom: calc(var(--barre) + env(safe-area-inset-bottom)); -webkit-tap-highlight-color: transparent; }
+  body { font-family: var(--texte); background: var(--or); color: var(--encre); font-size: 1rem; line-height: 1.55; padding-bottom: calc(var(--barre) + env(safe-area-inset-bottom)); -webkit-tap-highlight-color: transparent; }
   a { color: inherit; }
   button { font: inherit; color: inherit; }
   :focus-visible { outline: 3px solid var(--encre); outline-offset: 3px; border-radius: 6px; }
@@ -34,9 +34,16 @@
   .top nav { display: none; }
   .btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; font-weight: 700; font-size: 16px; padding: 14px 22px; border-radius: 999px; border: 3px solid var(--encre); text-decoration: none; cursor: pointer; }
   .btn-noir { background: var(--encre); color: var(--or); }
-  .btn-noir:hover { background: var(--rouge); border-color: var(--rouge); color: #fff; }
   .btn-clair { background: transparent; }
-  .btn-clair:hover { background: var(--papier); }
+  /* Retour immédiat à l'appui ; le survol seulement là où il existe vraiment */
+  .btn, .barre a { transition: scale .12s ease-out, background-color .15s, color .15s; }
+  .btn:active, .barre a:active { scale: .96; }
+  .barre a:not(.principal):active { background: rgba(241,197,14,.18); }
+  @media (hover: hover) {
+    .btn-noir:hover { background: var(--rouge); border-color: var(--rouge); color: #fff; }
+    .btn-clair:hover { background: var(--papier); }
+    .top nav a.lien:hover { text-decoration: underline; text-underline-offset: 5px; text-decoration-thickness: 2px; }
+  }
   .btn svg { width: 18px; height: 18px; }
 
   /* Hero : le pagne d'abord, le texte ensuite */
@@ -86,14 +93,13 @@
     .infos .bloc + .bloc { border-top: 0; border-left: 3px solid var(--encre); }
   }
   @media (min-width: 1024px) {
-    body { padding-bottom: 0; font-size: 17px; }
+    body { padding-bottom: 0; font-size: 1.0625rem; }
     .barre { display: none; }
     html { scroll-padding-top: 150px; }
     .top .wrap { height: 76px; }
     .top img { height: 52px; }
     .top nav { display: flex; gap: 28px; align-items: center; font-weight: 700; }
     .top nav a.lien { text-decoration: none; }
-    .top nav a.lien:hover { text-decoration: underline; text-underline-offset: 5px; text-decoration-thickness: 2px; }
     .hero { display: grid; grid-template-columns: 1fr 1.05fr; align-items: center; gap: 24px; min-height: calc(100vh - 76px); }
     .hero-texte { order: -1; padding: 40px 0; }
     .pagne { margin: 0; height: min(78vh, 680px); }
@@ -101,7 +107,7 @@
     .carte .wrap { display: grid; grid-template-columns: 1fr minmax(480px, 600px); gap: 56px; align-items: center; }
     #carnet { --ck-hauteur: min(80vh, 760px); }
   }
-  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .btn:active, .barre a:active { scale: none; } }
 </style>
 </head>
 <body>
@@ -269,12 +275,13 @@
     }
 
     let actif = true, enCours = false;
-    const t0 = performance.now();
+    const t0 = performance.now(); let avant = t0;
     function dessiner() { if (!enCours) { enCours = true; requestAnimationFrame(boucle); } }
     function boucle(now) {
       enCours = false;
       const t = REDUIT ? 1.2 : (now - t0) / 1000;
-      vent.force *= 0.97;
+      const dt = Math.min((now - avant) / 16.7, 4); avant = now;
+      vent.force *= Math.pow(0.97, dt); // même retombée à 60 et à 120 Hz
       onduler(t);
       // Entrée : le pagne se déroule depuis la corde.
       const intro = REDUIT ? 1 : Math.min((now - t0) / 1100, 1), e = 1 - Math.pow(1 - intro, 3);

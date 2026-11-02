@@ -10,7 +10,7 @@
   .ck-story { position: relative; flex: 0 0 100%; height: 100%; scroll-snap-align: start; scroll-snap-stop: always; display: grid; grid-template-rows: 1fr auto; padding: 96px 20px 22px; background: var(--fond); color: var(--txt); overflow: hidden; }
   .ck-story::before { content: ""; position: absolute; inset: 0; background: radial-gradient(70% 45% at 50% 36%, rgba(255,255,255,.16), transparent 70%); pointer-events: none; }
   .ck-visuel { position: relative; display: grid; place-items: center; min-height: 0; }
-  .ck-plat { width: min(78cqw, 42cqh, 400px); aspect-ratio: 1; filter: drop-shadow(0 22px 30px rgba(0,0,0,.4)); transition: transform .7s cubic-bezier(.2,.9,.25,1.15), opacity .5s; transform: rotate(-30deg) scale(.82); opacity: 0; }
+  .ck-plat { width: min(78cqw, 42cqh, 400px); aspect-ratio: 1; filter: drop-shadow(0 22px 30px rgba(0,0,0,.4)); transition: transform .55s cubic-bezier(.2,.8,.2,1), opacity .4s; transform: rotate(-12deg) scale(.9); opacity: 0; }
   .ck-plat svg, .ck-plat img { width: 100%; height: 100%; display: block; object-fit: cover; border-radius: 50%; }
   .ck-story.ck-vue .ck-plat { transform: none; opacity: 1; }
   .ck-vapeur { position: absolute; top: 2%; left: 50%; width: 120px; height: 110px; transform: translateX(-50%); pointer-events: none; opacity: 0; transition: opacity .6s .3s; }
@@ -38,17 +38,19 @@
   .ck-glisser { font-weight: 600; font-size: 14px; margin-top: 14px; opacity: .9; }
   .ck-haut { position: absolute; z-index: 3; top: 0; left: 0; right: 0; padding: 12px 12px 10px; background: linear-gradient(rgba(0,0,0,.35), transparent); }
   .ck-barres { display: flex; gap: 3px; }
-  .ck-barres span { flex: 1; height: 3px; border-radius: 3px; background: rgba(255,255,255,.35); }
-  .ck-barres span.ck-fait { background: #fff; }
+  .ck-barres span { flex: 1; height: 3px; border-radius: 3px; background: rgba(255,255,255,.35); overflow: hidden; }
+  .ck-barres i { display: block; height: 100%; background: #fff; transform-origin: left; transform: scaleX(0); }
   .ck-chips { display: flex; gap: 6px; margin: 10px -12px 0; padding: 0 12px; overflow-x: auto; scrollbar-width: none; }
   .ck-chips::-webkit-scrollbar { display: none; }
   .ck-chips button { flex: none; padding: 7px 13px; border-radius: 999px; border: 0; background: rgba(0,0,0,.3); color: #fff; font: 600 13px var(--ck-texte, system-ui); cursor: pointer; backdrop-filter: blur(6px); }
   .ck-chips button[aria-current="true"] { background: #fff; color: #000; }
+  .ck-chips button, .ck-fleche, .ck-commander { transition: scale .12s ease-out; }
+  .ck-chips button:active, .ck-fleche:active, .ck-commander:active { scale: .95; }
   .ck-fleche { position: absolute; z-index: 3; top: 50%; width: 44px; height: 44px; margin-top: -22px; border-radius: 50%; border: 0; background: rgba(255,255,255,.85); color: #000; font: 700 22px/1 system-ui; cursor: pointer; display: none; }
   .ck-fleche:disabled { opacity: 0; pointer-events: none; }
   .ck-fleche.ck-g { left: 10px; } .ck-fleche.ck-d { right: 10px; }
   @media (hover: hover) { .ck-fleche { display: block; } }
-  @media (prefers-reduced-motion: reduce) { .ck-plat { transition: none; transform: none; opacity: 1; } .ck-vapeur { display: none; } }`;
+  @media (prefers-reduced-motion: reduce) { .ck-plat { transition: opacity .2s; transform: none; } .ck-vapeur { display: none; } .ck-chips button:active, .ck-fleche:active, .ck-commander:active { scale: none; opacity: .8; } }`;
 
   const TEINTES = {
     entrees: { fond: "#E8550F", txt: "#FFF8E6" }, plats: { fond: "#B30807", txt: "#FFF8E6" }, grillades: { fond: "#24120B", txt: "#F1C50E" },
@@ -70,11 +72,14 @@
     let stories = [], liste = [], courant = 0;
 
     function aller(n) { n = Math.max(0, Math.min(stories.length - 1, n)); fil.scrollTo({ left: n * fil.clientWidth, behavior: REDUIT ? "auto" : "smooth" }); }
+    let traits = [];
     function maj() {
-      const n = Math.round(fil.scrollLeft / Math.max(fil.clientWidth, 1));
+      const pos = fil.scrollLeft / Math.max(fil.clientWidth, 1), n = Math.round(pos);
+      // La progression suit le doigt en continu, pas story par story.
+      traits.forEach((t, k) => t.style.transform = `scaleX(${Math.max(0, Math.min(1, pos - k))})`);
+      if (n === courant && stories[n]?.classList.contains("ck-vue")) return;
       stories.forEach((s, k) => s.classList.toggle("ck-vue", k === n));
       courant = n;
-      barres.innerHTML = liste.map((_, k) => `<span class="${k < n ? "ck-fait" : ""}"></span>`).join("");
       const cat = stories[n]?.dataset.cat;
       chips.querySelectorAll("button").forEach(b => b.setAttribute("aria-current", b.dataset.cat === cat));
       fg.disabled = n === 0; fd.disabled = n === stories.length - 1;
@@ -110,6 +115,8 @@
       });
       fil.innerHTML = h;
       stories = [...fil.querySelectorAll(".ck-story")];
+      barres.innerHTML = liste.map(() => "<span><i></i></span>").join("");
+      traits = [...barres.querySelectorAll("i")]; courant = -1;
       const cats = o.categories.filter(c => liste.some(p => p.cat === c.id));
       chips.innerHTML = cats.length > 1 ? cats.map(c => `<button type="button" data-cat="${c.id}">${c.nom}</button>`).join("") : "";
       chips.querySelectorAll("button").forEach(b => b.addEventListener("click", () => aller(stories.findIndex(s => s.dataset.cat === b.dataset.cat))));

@@ -24,7 +24,7 @@
   .ck-polaroid { float: right; width: 46%; margin: 4px -4px 12px 14px; padding: 8px 8px 0; background: #fff; box-shadow: 0 6px 16px rgba(0,0,0,.22); transform: rotate(3deg); position: relative; }
   .ck-polaroid::before, .ck-polaroid::after { content: ""; position: absolute; width: 56px; height: 20px; background: rgba(241,197,14,.55); top: -9px; }
   .ck-polaroid::before { left: -14px; transform: rotate(-32deg); } .ck-polaroid::after { right: -14px; transform: rotate(32deg); }
-  .ck-polaroid svg, .ck-polaroid img { display: block; width: 100%; height: auto; }
+  .ck-polaroid svg, .ck-polaroid img { display: block; width: 100%; height: auto; -webkit-user-drag: none; }
   .ck-polaroid figcaption { font: 400 15px/28px "Kalam", cursive; color: #555; text-align: center; }
   .ck-note { color: var(--stylo-rouge); transform: rotate(-1.5deg); transform-origin: left; }
   .ck-prix { display: inline-block; font: 700 24px/1 "Kalam", cursive; color: var(--stylo-rouge); padding: 8px 16px; border: 2.5px solid var(--stylo-rouge); border-radius: 50% 46% 52% 44% / 54% 50% 48% 46%; transform: rotate(-4deg); }
@@ -48,6 +48,10 @@
   .ck-commandes > button { border: var(--ck-bordure, 0); background: var(--ck-bouton2, rgba(0,0,0,.08)); color: var(--ck-bouton2-txt, inherit); border-radius: 999px; padding: 12px 16px; font-weight: 700; font-size: 15px; cursor: pointer; }
   .ck-commandes > button:disabled { opacity: .35; cursor: default; }
   .ck-commandes .ck-prec { justify-self: start; } .ck-commandes .ck-suiv { justify-self: end; background: var(--ck-bouton, #000); color: var(--ck-bouton-txt, #fff); }
+  .ck-commandes > button { transition: scale .12s ease-out, opacity .2s; }
+  .ck-commandes > button:active:not(:disabled) { scale: .96; }
+  .ck-sommaire button:active { color: var(--stylo-rouge); }
+  @media (prefers-reduced-motion: reduce) { .ck-commandes > button:active:not(:disabled) { scale: none; opacity: .8; } }
   .ck-milieu { display: grid; justify-items: center; font-size: 13px; }
   .ck-milieu button { all: unset; cursor: pointer; font-weight: 700; font-size: 14px; text-decoration: underline; text-underline-offset: 3px; padding: 2px 6px; }
   .ck-milieu button:focus-visible { outline: 2px solid currentColor; border-radius: 4px; }
@@ -106,31 +110,65 @@
       <button class="ck-suiv" type="button">Suivante ›</button></nav>`;
     const livre = hote.querySelector(".ck-livre"), dessus = hote.querySelector(".ck-dessus"), dessous = hote.querySelector(".ck-dessous");
     const prec = hote.querySelector(".ck-prec"), suiv = hote.querySelector(".ck-suiv"), compteur = hote.querySelector(".ck-compteur");
-    let i = 0, occupe = false;
+    const DERNIERE = pages.length - 1;
+    // Une page qui tourne = une « paire » : dessus = p0 (visible à 0°), dessous = p1 (visible à -180°).
+    // Elle est menée par un ressort amorti critique (réponse 0,42 s) qui part toujours de l'angle affiché
+    // et garde la vitesse : on peut la rattraper, l'inverser ou enchaîner d'autres pages à tout moment.
+    const K = (2 * Math.PI / .42) ** 2, C = 4 * Math.PI / .42, KB = (2 * Math.PI / .3) ** 2, CB = 4 * Math.PI / .3;
+    let i = 0, but = 0, saut = false, elan = 0, paire = null, bord = null, tenu = false, raf = 0, avant = 0;
     const remplir = (el, n) => { el.innerHTML = pages[n] + '<div class="ck-ombre"></div>'; };
-    function afficher() {
-      remplir(dessus, i); dessus.style.transform = ""; dessous.classList.remove("ck-visible");
-      prec.disabled = i === 0; suiv.disabled = i === pages.length - 1;
-      compteur.textContent = i === 0 ? "Couverture" : `Page ${i} sur ${pages.length - 1}`;
+    const caoutchouc = (d, w) => d * w * .55 / (w + .55 * Math.abs(d));
+    function majCommandes() {
+      prec.disabled = but === 0; suiv.disabled = but === DERNIERE;
+      compteur.textContent = but === 0 ? "Couverture" : `Page ${but} sur ${DERNIERE}`;
     }
-    function feuilleter(de, a, ensuite) {
-      occupe = true;
-      const fini = () => { occupe = false; ensuite(); };
-      if (REDUIT) return fini();
-      const anim = dessus.animate([{ transform: `rotateY(${de}deg)` }, { transform: `rotateY(${a}deg)` }], { duration: 520 * Math.abs(a - de) / 180 + 80, easing: "cubic-bezier(.3,.6,.2,1)", fill: "forwards" });
-      const ombre = dessous.querySelector(".ck-ombre");
-      if (ombre) ombre.animate([{ opacity: a < de ? .9 : 0 }, { opacity: a < de ? 0 : .9 }], { duration: 520 });
-      anim.onfinish = () => { anim.cancel(); fini(); };
+    function repos() {
+      paire = null; remplir(dessus, i); dessus.style.transform = ""; dessous.classList.remove("ck-visible"); majCommandes();
     }
-    function suivante(depuis = 0) { if (occupe || i >= pages.length - 1) return; remplir(dessous, i + 1); dessous.classList.add("ck-visible"); feuilleter(depuis, -180, () => { i++; afficher(); }); }
-    function precedente(depuis = -180) { if (occupe || i <= 0) return; remplir(dessous, i); dessous.classList.add("ck-visible"); remplir(dessus, i - 1); feuilleter(depuis, 0, () => { i--; afficher(); }); }
-    function allerA(n) {
-      if (occupe || n === i) return;
-      if (n === i + 1) return suivante(); if (n === i - 1) return precedente();
-      remplir(dessous, n); dessous.classList.add("ck-visible");
-      if (n > i) feuilleter(0, -180, () => { i = n; afficher(); });
-      else { remplir(dessus, n); remplir(dessous, i); feuilleter(-180, 0, () => { i = n; afficher(); }); }
+    function ouvrir(p0, p1, x, v = 0) {
+      remplir(dessus, p0); remplir(dessous, p1); dessous.classList.add("ck-visible");
+      paire = { p0, p1, x, v, ombre: dessous.querySelector(".ck-ombre") }; peindre();
     }
+    function peindre() {
+      if (paire) { dessus.style.transform = `rotateY(${paire.x}deg)`; paire.ombre.style.opacity = .9 * (1 + paire.x / 180); }
+      else if (bord) dessus.style.transform = `translateX(${bord.x}px)`;
+    }
+    const fondu = () => dessus.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 180, easing: "ease-out" });
+    function demarrer() {
+      if (paire || tenu || but === i) return;
+      const loin = saut; saut = false;
+      if (REDUIT) { i = but; repos(); fondu(); return; }
+      if (but > i) ouvrir(i, loin ? but : i + 1, 0, elan); else ouvrir(loin ? but : i - 1, i, -180, elan);
+      elan = 0; animer();
+    }
+    function ressort(s, cible, k, c, dt) { for (let n = 0; n < 4; n++) { const h = dt / 4; s.v += (-k * (s.x - cible) - c * s.v) * h; s.x += s.v * h; } }
+    function animer() { if (!raf && !tenu) { avant = performance.now(); raf = requestAnimationFrame(image); } }
+    function image(now) {
+      raf = 0; if (tenu) return;
+      const dt = Math.min(Math.max(now - avant, 0) / 1000, .064); avant = now;
+      if (bord) { ressort(bord, 0, KB, CB, dt); if (Math.abs(bord.x) < .5 && Math.abs(bord.v) < 10) { bord = null; dessus.style.transform = ""; } }
+      if (paire) {
+        const cible = but >= paire.p1 ? -180 : but <= paire.p0 ? 0 : paire.x < -90 ? -180 : 0;
+        ressort(paire, cible, K, C, dt);
+        // Plusieurs pages demandées : on enchaîne dès que la page tournée n'est plus visible, sans perdre l'élan.
+        const enchaine = cible === -180 ? but > paire.p1 && paire.x < -90 : but < paire.p0 && paire.x > -6;
+        const pose = Math.abs(paire.x - cible) < .5 && Math.abs(paire.v) < 8;
+        if (enchaine || pose) {
+          i = cible === -180 ? paire.p1 : paire.p0; elan = enchaine ? paire.v : 0;
+          saut = Math.abs(but - i) > 1; // encore loin : la page suivante va droit au but
+          repos(); demarrer();
+        }
+      }
+      peindre();
+      if ((paire || bord) && !raf) raf = requestAnimationFrame(image);
+    }
+    function vers(n, loin = false) {
+      n = Math.max(0, Math.min(DERNIERE, n));
+      if (n === but) return;
+      but = n; saut = loin; majCommandes();
+      if (paire) animer(); else demarrer();
+    }
+    const suivante = () => vers(but + 1), precedente = () => vers(but - 1), allerA = n => vers(n, Math.abs(n - but) > 1);
     prec.addEventListener("click", () => precedente());
     suiv.addEventListener("click", () => suivante());
     hote.querySelector(".ck-vers-sommaire").addEventListener("click", () => allerA(1));
@@ -142,31 +180,52 @@
       if (!visible || /input|textarea/i.test(document.activeElement?.tagName)) return;
       if (e.key === "ArrowRight") suivante(); if (e.key === "ArrowLeft") precedente();
     });
-    // Glisser du doigt : la page suit, puis se tourne ou revient
-    let x0 = null, y0 = 0, sens = null, angle = 0;
-    livre.addEventListener("pointerdown", e => { if (occupe || e.button > 0) return; x0 = e.clientX; y0 = e.clientY; sens = null; });
-    livre.addEventListener("pointermove", e => {
-      if (x0 === null || occupe) return;
-      const dx = e.clientX - x0, w = livre.clientWidth;
-      if (!sens) {
-        if (Math.abs(e.clientY - y0) > Math.abs(dx) + 4) { x0 = null; return; } // geste vertical : on laisse défiler
-        if (Math.abs(dx) < 12) return;
-        if (dx < 0 && i < pages.length - 1) { sens = "suiv"; remplir(dessous, i + 1); }
-        else if (dx > 0 && i > 0) { sens = "prec"; remplir(dessous, i); remplir(dessus, i - 1); }
-        else { x0 = null; return; }
-        dessous.classList.add("ck-visible"); livre.setPointerCapture(e.pointerId);
+    // Glisser du doigt : la page suit 1:1 ; on peut la rattraper en plein vol.
+    let geste = null;
+    livre.addEventListener("dragstart", e => e.preventDefault()); // sinon la photo part en glisser-déposer et annule le geste
+    livre.addEventListener("pointerdown", e => {
+      if (e.button > 0) return;
+      geste = { x0: e.clientX, y0: e.clientY, hist: [], pris: false };
+      if (paire || bord) {
+        cancelAnimationFrame(raf); raf = 0;
+        geste.pris = tenu = true; geste.bord = !paire; geste.a0 = paire ? paire.x : bord.x;
+        livre.setPointerCapture(e.pointerId);
       }
-      angle = sens === "suiv" ? Math.max(-180, Math.min(0, dx / w * 200)) : Math.max(-180, Math.min(0, -180 + dx / w * 200));
-      dessus.style.transform = `rotateY(${angle}deg)`;
     });
-    const lacher = () => {
-      if (x0 === null) return; x0 = null; if (!sens) return;
-      const s = sens; sens = null; dessus.style.transform = "";
-      if (s === "suiv") { if (angle < -50) feuilleter(angle, -180, () => { i++; afficher(); }); else feuilleter(angle, 0, afficher); }
-      else { if (angle > -130) feuilleter(angle, 0, () => { i--; afficher(); }); else feuilleter(angle, -180, afficher); }
+    livre.addEventListener("pointermove", e => {
+      const g = geste; if (!g) return;
+      const dx = e.clientX - g.x0, w = livre.clientWidth;
+      if (!g.pris) {
+        if (Math.abs(e.clientY - g.y0) > Math.abs(dx) + 4) { geste = null; return; } // geste vertical : on laisse défiler
+        if (Math.abs(dx) < 10) return;
+        if (dx < 0 && i < DERNIERE) ouvrir(i, i + 1, 0);
+        else if (dx > 0 && i > 0) ouvrir(i - 1, i, -180);
+        else { bord = { x: 0, v: 0 }; g.bord = true; } // au bout du carnet : résistance élastique
+        g.a0 = paire ? paire.x : bord.x; g.pris = tenu = true; livre.setPointerCapture(e.pointerId);
+      }
+      if (g.bord) bord.x = g.a0 + caoutchouc(dx, w);
+      else {
+        paire.x = Math.max(-180, Math.min(0, g.a0 + dx / w * 200));
+        g.hist.push({ t: e.timeStamp, x: paire.x }); if (g.hist.length > 12) g.hist.shift();
+      }
+      peindre();
+    });
+    const lacher = e => {
+      const g = geste; geste = null;
+      if (!g || !g.pris) return;
+      tenu = false;
+      if (paire && !g.bord) {
+        // La vitesse décide (un flick tourne la page), la position départage les gestes lents.
+        const h = g.hist.filter(p => e.timeStamp - p.t < 100);
+        const v = h.length > 1 ? (h[h.length - 1].x - h[0].x) / Math.max((h[h.length - 1].t - h[0].t) / 1000, .016) : 0;
+        const fin = Math.abs(v) > 250 ? (v < 0 ? -180 : 0) : (paire.x < -90 ? -180 : 0);
+        but = fin === -180 ? paire.p1 : paire.p0; saut = false; paire.v = v; majCommandes();
+        if (REDUIT) { i = but; repos(); fondu(); return; }
+      }
+      animer();
     };
     livre.addEventListener("pointerup", lacher); livre.addEventListener("pointercancel", lacher);
-    afficher();
+    repos();
     return { allerA };
   }
   window.CookCarnet = { monter };
