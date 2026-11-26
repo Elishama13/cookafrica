@@ -45,6 +45,7 @@
   .ck-eventail div:nth-child(1) { transform: translate(-108%, -44%) rotate(-14deg); }
   .ck-eventail div:nth-child(2) { transform: translate(-50%, -58%); z-index: 1; }
   .ck-eventail div:nth-child(3) { transform: translate(8%, -42%) rotate(12deg); }
+  .ck-eventail img { display: block; width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
   .ck-eventail div:only-child { transform: translate(-50%, -50%); width: min(60cqw, 36cqh, 260px); }
   .ck-glisser { font-weight: 600; font-size: 14px; margin-top: 14px; opacity: .9; }
   .ck-haut { position: absolute; z-index: 3; top: 0; left: 0; right: 0; padding: 12px 12px 10px; background: linear-gradient(rgba(0,0,0,.35), transparent); }

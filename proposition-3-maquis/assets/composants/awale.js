@@ -23,6 +23,9 @@
   .ck-graines li { display: grid; grid-template-columns: auto 1fr auto; gap: 2px 12px; align-items: start; padding: 14px; border-radius: 16px; background: var(--ck-carte, #34190F); border: 1px solid var(--ck-bord, #4A2416); animation: ck-pousse .38s cubic-bezier(.2,.8,.2,1) backwards; }
   @keyframes ck-pousse { from { opacity: 0; transform: translateY(-8px); } }
   .ck-grain { width: 14px; height: 11px; margin-top: 6px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #B8B5A2, #6E6C5C); }
+  .ck-vignette { grid-row: span 2; width: 64px; height: 64px; border-radius: 50%; object-fit: cover; display: block; box-shadow: 0 0 0 2px var(--ck-bord, #4A2416); }
+  .ck-vignette.ck-or { box-shadow: 0 0 0 3px var(--ck-or, #F1C50E); }
+  .ck-graines li:has(.ck-vignette) { align-items: center; }
   .ck-grain.ck-or { background: radial-gradient(circle at 35% 35%, #FFE27A, #C99A06); }
   .ck-graines strong { font-weight: 600; font-size: 17px; }
   .ck-graines p { grid-column: 2 / -1; color: var(--ck-sable, #D9BFA0); font-size: 15px; }
@@ -65,7 +68,7 @@
     }
     // La récolte s'affiche tout de suite (léger décalage) : les graines qui volent ne sont qu'un décor.
     function pousser(p, n = 0) {
-      liste.insertAdjacentHTML("beforeend", `<li style="animation-delay:${Math.min(n, 10) * 35}ms"><span class="ck-grain ${p.signature ? "ck-or" : ""}" aria-hidden="true"></span><strong>${p.nom}</strong><span class="ck-prix">${formatPrix(p.prix)}</span><p>${p.desc}${p.accomp ? ` Servi avec ${p.accomp.toLowerCase()}.` : ""}</p></li>`);
+      liste.insertAdjacentHTML("beforeend", `<li style="animation-delay:${Math.min(n, 10) * 35}ms">${p.photo ? `<img class="ck-vignette ${p.signature ? "ck-or" : ""}" src="${p.photo}" alt="" loading="lazy">` : `<span class="ck-grain ${p.signature ? "ck-or" : ""}" aria-hidden="true"></span>`}<strong>${p.nom}</strong><span class="ck-prix">${formatPrix(p.prix)}</span><p>${p.desc}${p.accomp ? ` Servi avec ${p.accomp.toLowerCase()}.` : ""}</p></li>`);
     }
     // Sur téléphone, on amène la récolte sous les yeux, sauf si la personne a déjà repris la main.
     function amener() {
