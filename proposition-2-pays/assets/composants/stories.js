@@ -1,16 +1,17 @@
 // Composant « stories » : un plat par écran, on glisse ou on touche à gauche / à droite.
 // Usage : const s = CookStories.monter(element, { categories, recits, telHref });
 //         s.afficher(plats, titre, texte)  — remplace le contenu (ex. après un filtre).
-// Thème : --ck-titre (police des titres), --ck-texte, --ck-hauteur.
+// Option : regions { id: nom } affiche un badge « Région » distinct du nom du plat.
+// Thème : --ck-titre (police des titres), --ck-titre-plat (nom des plats), --ck-texte, --ck-hauteur.
 (function () {
   const CSS = `
   .ck-stories { position: relative; container-type: size; height: var(--ck-hauteur, min(82dvh, 760px)); border-radius: 28px; overflow: hidden; background: #000; color: #fff; font-family: var(--ck-texte, system-ui, sans-serif); box-shadow: 0 24px 60px rgba(0,0,0,.4); }
   .ck-fil { display: flex; height: 100%; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: none; }
   .ck-fil::-webkit-scrollbar { display: none; }
-  .ck-story { position: relative; flex: 0 0 100%; height: 100%; scroll-snap-align: start; scroll-snap-stop: always; display: grid; grid-template-rows: 1fr auto; padding: 96px 20px 22px; background: var(--fond); color: var(--txt); overflow: hidden; }
+  .ck-story { position: relative; flex: 0 0 100%; height: 100%; scroll-snap-align: start; scroll-snap-stop: always; display: grid; grid-template-rows: minmax(0, 1fr) auto; padding: 96px 20px 22px; background: var(--fond); color: var(--txt); overflow: hidden; }
   .ck-story::before { content: ""; position: absolute; inset: 0; background: radial-gradient(70% 45% at 50% 36%, rgba(255,255,255,.16), transparent 70%); pointer-events: none; }
   .ck-visuel { position: relative; display: grid; place-items: center; min-height: 0; }
-  .ck-plat { width: min(78cqw, 42cqh, 400px); aspect-ratio: 1; filter: drop-shadow(0 22px 30px rgba(0,0,0,.4)); transition: transform .55s cubic-bezier(.2,.8,.2,1), opacity .4s; transform: rotate(-12deg) scale(.9); opacity: 0; }
+  .ck-plat { width: min(70cqw, 34cqh, 360px); aspect-ratio: 1; filter: drop-shadow(0 22px 30px rgba(0,0,0,.4)); transition: transform .55s cubic-bezier(.2,.8,.2,1), opacity .4s; transform: rotate(-12deg) scale(.9); opacity: 0; }
   .ck-plat svg, .ck-plat img { width: 100%; height: 100%; display: block; object-fit: cover; border-radius: 50%; }
   .ck-story.ck-vue .ck-plat { transform: none; opacity: 1; }
   .ck-vapeur { position: absolute; top: 2%; left: 50%; width: 120px; height: 110px; transform: translateX(-50%); pointer-events: none; opacity: 0; transition: opacity .6s .3s; }
@@ -18,10 +19,20 @@
   .ck-vapeur i { position: absolute; bottom: 0; width: 26px; height: 64px; border-radius: 50%; background: rgba(255,255,255,.5); filter: blur(10px); animation: ck-monte 3.4s ease-in infinite; }
   .ck-vapeur i:nth-child(1) { left: 20px; } .ck-vapeur i:nth-child(2) { left: 48px; animation-delay: 1.1s; } .ck-vapeur i:nth-child(3) { left: 76px; animation-delay: 2.2s; }
   @keyframes ck-monte { 0% { transform: translateY(30px) scaleX(.6); opacity: 0; } 30% { opacity: .9; } 100% { transform: translateY(-60px) scaleX(1.4); opacity: 0; } }
-  .ck-texte { position: relative; display: grid; gap: 4px; }
+  .ck-texte { position: relative; display: grid; gap: 6px; }
+  .ck-lieu { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+  .ck-region { display: inline-flex; align-items: center; gap: 6px; padding: 4px 11px 4px 8px; border-radius: 999px; background: var(--txt); color: var(--fond); font-size: 13px; font-weight: 500; }
+  .ck-region b { font-weight: 700; }
+  .ck-region svg { width: 14px; height: 14px; flex: none; }
+  .ck-terroir { font-size: 13px; font-style: italic; opacity: .85; }
+  .ck-kicker { font-size: 13px; font-weight: 600; opacity: .8; }
+  .ck-details { display: grid; grid-template-columns: auto 1fr; gap: 3px 10px; margin-top: 4px; padding-top: 8px; border-top: 1px solid color-mix(in srgb, var(--txt) 30%, transparent); font-size: 14px; }
+  .ck-details dt { font-weight: 700; }
+  .ck-details dd { margin: 0; opacity: .92; }
   .ck-origine { font-size: 14px; font-weight: 500; opacity: .85; }
   .ck-story h3 { font: 800 clamp(30px, 9cqw, 50px)/1 var(--ck-titre, system-ui); letter-spacing: -0.015em; }
-  .ck-desc { font-size: 15px; opacity: .92; }
+  .ck-story h3.ck-nom { font: 400 clamp(32px, 10cqw, 54px)/1.02 var(--ck-titre-plat, var(--ck-titre, system-ui)); margin: 2px 0; }
+  .ck-desc { font-size: 16px; line-height: 1.45; }
   .ck-pied { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 10px; }
   .ck-prix { font: 800 24px var(--ck-titre, system-ui); }
   .ck-commander { display: inline-flex; align-items: center; gap: 8px; padding: 12px 18px; border-radius: 999px; background: var(--txt); color: var(--fond); text-decoration: none; font-weight: 600; }
@@ -57,6 +68,7 @@
     desserts: { fond: "#F1C50E", txt: "#3A0A04" }, boissons: { fond: "#6E0703", txt: "#F7E3A1" }
   };
   const CHAUD = new Set(["entrees", "plats", "grillades"]);
+  const REPERE = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s7-6.2 7-12a7 7 0 0 0-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>`;
   const TEL = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h4l2 5-2.5 1.5a11 11 0 0 0 6 6L16 13l5 2v4a2 2 0 0 1-2 2A17 17 0 0 1 3 5a2 2 0 0 1 2-2"/></svg>`;
 
   function monter(hote, o) {
@@ -101,16 +113,25 @@
       const sig = (liste.filter(p => p.signature).length ? liste.filter(p => p.signature) : liste).slice(0, 3);
       let h = `<article class="ck-story ck-couv" style="--fond:var(--ck-couv-fond, #F1C50E);--txt:var(--ck-couv-txt, #3A0A04)" aria-label="${titre}">
         <div class="ck-eventail" aria-hidden="true">${sig.map(p => `<div>${p.photo ? `<img src="${p.photo}" alt="">` : illustration(p)}</div>`).join("")}</div>
-        <div class="ck-texte"><span class="ck-origine">${liste.length} plat${liste.length > 1 ? "s" : ""}</span><h3>${titre}</h3><p class="ck-desc">${texte}</p>
+        <div class="ck-texte">${typeof texte === "object"
+          ? `<span class="ck-kicker">Région · ${liste.length} plat${liste.length > 1 ? "s" : ""}</span><h3>${titre}</h3>
+             <p class="ck-desc">${texte.texte}</p><dl class="ck-details"><dt>Peuples</dt><dd>${texte.peuple}</dd></dl>`
+          : `<span class="ck-origine">${liste.length} plat${liste.length > 1 ? "s" : ""}</span><h3>${titre}</h3><p class="ck-desc">${texte}</p>`}
         <p class="ck-glisser">Glissez vers la gauche ou touchez à droite pour voir les plats.</p></div></article>`;
       liste.forEach(p => {
         const t = TEINTES[p.cat] || TEINTES.plats, r = o.recits[p.nom] || {};
+        const region = o.regions && o.regions[p.region];
+        const lieu = region
+          ? `<div class="ck-lieu"><span class="ck-region">${REPERE}Région <b>${region}</b></span>${r.origine ? `<span class="ck-terroir">${r.origine}</span>` : ""}</div>`
+          : `<span class="ck-origine">${r.origine || ""}${p.accomp ? `, servi avec ${p.accomp.toLowerCase()}` : ""}</span>`;
+        const details = region ? [["Servi avec", p.accomp], ["Se mange", r.seMange]].filter(d => d[1]) : [];
         h += `<article class="ck-story" style="--fond:${t.fond};--txt:${t.txt}" data-cat="${p.cat}" aria-label="${p.nom}, ${formatPrix(p.prix)}">
           <div class="ck-visuel">${CHAUD.has(p.cat) ? '<div class="ck-vapeur" aria-hidden="true"><i></i><i></i><i></i></div>' : ""}
             <div class="ck-plat">${p.photo ? `<img src="${p.photo}" alt="${p.nom}" loading="lazy">` : illustration(p)}</div></div>
           <div class="ck-texte">${p.signature ? '<span class="ck-sceau">Signature de la maison</span>' : ""}
-            <span class="ck-origine">${r.origine || ""}${p.accomp ? `, servi avec ${p.accomp.toLowerCase()}` : ""}</span>
-            <h3>${p.nom}</h3><p class="ck-desc">${p.desc}</p>
+            ${lieu}
+            <h3 class="ck-nom">${p.nom}</h3><p class="ck-desc">${p.desc}</p>
+            ${details.length ? `<dl class="ck-details">${details.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("")}</dl>` : ""}
             <div class="ck-pied"><span class="ck-prix">${formatPrix(p.prix)}</span><a class="ck-commander" href="${o.telHref}">${TEL}Commander</a></div></div></article>`;
       });
       fil.innerHTML = h;
